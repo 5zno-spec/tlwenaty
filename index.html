@@ -64,6 +64,11 @@ button.ic svg{width:38px;height:38px;display:block;pointer-events:none;filter:dr
 #save{background:#6ec9f5;color:#10283a}
 button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 
+/* الشريط السفلي: مربع الأزرار ومربع اللوحات المستقل على يمينه */
+#dock{position:fixed;left:0;right:0;bottom:max(10px,env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:stretch;gap:10px;padding:0 10px;direction:ltr;pointer-events:none}
+#dock>*{pointer-events:auto;direction:rtl}
+#dock .bar{position:static;transform:none;max-width:none;flex:0 1 auto}
+@media (max-width:360px){#dock{gap:6px}#dock .bar{gap:6px}#dock .ic{width:46px;height:46px}#dock .ic svg{width:32px;height:32px}#sound svg{width:26px;height:26px}}
 /* لوحة الألوان: شريط أفقي بالأعلى يُمرَّر يميناً وشمالاً (عجلة الفأرة أو السحب أو اللمس) */
 #palette{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 20px);
   display:flex;flex-direction:row;gap:8px;padding:10px 14px;background:var(--panel);border:2px solid var(--line);border-radius:36px;
@@ -145,6 +150,7 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 <div id="stage"></div>
 <div id="fx" aria-hidden="true"></div>
 <div id="palette" role="radiogroup" aria-label="الألوان"></div>
+<div id="dock">
 <div class="bar" id="actions">
   <button class="ic" id="erase" aria-pressed="false" aria-label="ممحاة: تمسح الجزء الذي تضغط عليه" title="ممحاة"><svg viewBox="0 0 48 48"><defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c7"/><stop offset="1" stop-color="#ee7b9c"/></linearGradient><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fa8ef"/><stop offset="1" stop-color="#2d6fc4"/></linearGradient></defs>
 <ellipse cx="25" cy="41" rx="15" ry="3" fill="#000" opacity=".18"/>
@@ -156,7 +162,13 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 <rect x="13" y="5" width="20" height="13" rx="1.5" fill="url(#gs)"/><rect x="26" y="7.5" width="4.5" height="8" rx="1" fill="#59677f"/>
 <rect x="10" y="25" width="28" height="19" rx="1.5" fill="#fbfbf7"/><rect x="13" y="30" width="22" height="1.8" fill="#c7ccd6"/><rect x="13" y="34.5" width="22" height="1.8" fill="#c7ccd6"/><rect x="13" y="39" width="14" height="1.8" fill="#c7ccd6"/></svg></button>
   <button class="ic" id="sound" aria-pressed="false" aria-label="كتم الصوت" title="كتم الصوت"><svg viewBox="0 0 48 48"><defs><linearGradient id="gk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fafbfd"/><stop offset="1" stop-color="#aeb8c8"/></linearGradient></defs><path d="M6 19a2 2 0 0 1 2-2h7l11-9a1.5 1.5 0 0 1 2.5 1.2v33.6A1.5 1.5 0 0 1 26 44l-11-9H8a2 2 0 0 1-2-2z" fill="url(#gk)" stroke="#5f6b7d" stroke-width="1.4" stroke-linejoin="round"/><g class="waves" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M33 18a9 9 0 0 1 0 12"/><path d="M38 12a17 17 0 0 1 0 24"/></g><g class="slash" stroke-linecap="round"><path d="M32 19l11 11M43 19L32 30" stroke="#fff" stroke-width="6.5"/><path d="M32 19l11 11M43 19L32 30" stroke="#e23d3a" stroke-width="3.4"/></g></svg></button>
-  <button class="ic" id="scenesBtn" type="button" aria-haspopup="dialog" aria-label="اختر رسمة" title="الرسومات"></button>
+</div>
+<div class="bar" id="scenesBox"><button class="ic" id="scenesBtn" type="button" aria-haspopup="dialog" aria-label="اللوحات: اختر رسمة" title="اللوحات"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gfr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0a566"/><stop offset="1" stop-color="#a8662f"/></linearGradient><linearGradient id="gsk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9dcff"/><stop offset="1" stop-color="#eaf8ff"/></linearGradient></defs>
+<rect x="4" y="6" width="40" height="36" rx="4" fill="url(#gfr)" stroke="#6b3d17" stroke-width="1.5"/>
+<rect x="9" y="11" width="30" height="26" rx="1.5" fill="url(#gsk)" stroke="#6b3d17" stroke-width="1.1"/>
+<circle cx="31.5" cy="18" r="3.6" fill="#ffd93d" stroke="#e0a812" stroke-width=".8"/>
+<path d="M9 37v-9l8-8 7 7 5-4 10 9v5z" fill="#7cc46b"/>
+<path d="M9 37v-5l8-6 6 5 6-3 10 7v2z" fill="#4fa04a"/></svg></button></div>
 </div>
 <div class="gl" id="glassWin" hidden>
   <div class="glass" role="dialog" aria-modal="true" aria-labelledby="glassTitle">
@@ -397,7 +409,7 @@ addEventListener("keydown",e=>{if(gl.hidden)return;
   pal.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;return}
     const b=e.target.closest(".sw");if(b)b.scrollIntoView({inline:"nearest",block:"nearest"})},true);
 })();
-function show(name){st.scene=name;st.mile=0;$("scenesBtn").innerHTML=ICONS[name];
+function show(name){st.scene=name;st.mile=0;
   
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
   $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="رسمة ${name} للتلوين">${SCENES[name]}</svg>`;
