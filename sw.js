@@ -1,10 +1,25 @@
 // خدمة العمل: تتيح تشغيل تلويناتي بدون إنترنت. غيّر رقم النسخة عند كل تحديث للملفات.
-const CACHE="talwinati-v1";
+const CACHE="talwinati-v2";
 const CORE=["./","index.html","manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable-512.png","apple-touch-icon.png"];
 const FONT_HOSTS=["fonts.googleapis.com","fonts.gstatic.com"];
+// نفس رابط الخط في index.html تمامًا: نحفظه مع ملفاته وقت التثبيت ليظهر الخط بلا إنترنت من أول زيارة
+const FONT_CSS="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700&display=swap";
+
+// أفضل جهد: فشل الخط أو بطؤه (أكثر من 6 ثوانٍ) لا يمنع التثبيت، والصفحة تعمل بخط النظام حينها
+function cacheFonts(c){
+  const job=fetch(FONT_CSS).then(r=>{
+    if(!r.ok)return;
+    const copy=r.clone();
+    return c.put(FONT_CSS,r).then(()=>copy.text()).then(css=>{
+      const urls=[...new Set([...css.matchAll(/url\((https:[^)]+)\)/g)].map(m=>m[1].replace(/["']/g,"")))];
+      return Promise.all(urls.map(u=>fetch(u).then(x=>x.ok&&c.put(u,x)).catch(()=>{})));
+    });
+  }).catch(()=>{});
+  return Promise.race([job,new Promise(ok=>setTimeout(ok,6000))]);
+}
 
 self.addEventListener("install",e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE).then(()=>cacheFonts(c))).then(()=>self.skipWaiting()));
 });
 self.addEventListener("activate",e=>{
   e.waitUntil(caches.keys()
