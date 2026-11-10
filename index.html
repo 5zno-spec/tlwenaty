@@ -72,7 +72,9 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 /* لوحة الألوان: شريط أفقي بالأعلى يُمرَّر يميناً وشمالاً (عجلة الفأرة أو السحب أو اللمس) */
 #palette{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 20px);
   display:flex;flex-direction:row;gap:8px;padding:10px 14px;background:var(--panel);border:2px solid var(--line);border-radius:36px;
-  overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+/* شريط التمرير الكلاسيكي مستطيل فتبرز أطرافه خارج انحناء الإطار: نخفيه، والتمرير بالعجلة والسحب واللمس والتنقل بلوحة المفاتيح يعمل بدونه */
+#palette::-webkit-scrollbar{display:none}
 .sw{flex:none;width:40px;height:40px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
 .sw[aria-checked="true"]{outline:4px solid var(--ring);outline-offset:2px;transform:scale(1.1)}
 /* نافذة زجاجية لاختيار الرسمة */
@@ -414,7 +416,10 @@ addEventListener("keydown",e=>{if(gl.hidden)return;
     else if(!e.shiftKey&&(i===-1||i===f.length-1)){e.preventDefault();f[0].focus()}}});
 /* لوحة الألوان الأفقية: عجلة الفأرة والسحب بالفأرة (اللمس يمرَّر تلقائياً)، وتُظهر اللون المختار */
 (function(){const pal=$("palette");let d=null,moved=false;
-  pal.addEventListener("wheel",e=>{if(pal.scrollWidth<=pal.clientWidth)return;e.preventDefault();pal.scrollBy({left:e.deltaY||e.deltaX})},{passive:false});
+  /* الصفحة من اليمين لليسار: تدوير العجلة للأسفل يُكمل نحو الألوان التالية (يسارًا)، فنعكس deltaY؛ أما الحركة الأفقية للوحة اللمس فتُستعمل كما هي */
+  pal.addEventListener("wheel",e=>{if(pal.scrollWidth<=pal.clientWidth)return;e.preventDefault();
+    const rtl=getComputedStyle(pal).direction==="rtl";
+    pal.scrollBy({left:Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:(rtl?-e.deltaY:e.deltaY)})},{passive:false});
   pal.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")return;d={x:e.clientX,s:pal.scrollLeft};moved=false});
   addEventListener("pointermove",e=>{if(!d)return;const dx=e.clientX-d.x;if(Math.abs(dx)>5)moved=true;if(moved)pal.scrollLeft=d.s-dx});
   addEventListener("pointerup",()=>{d=null});
