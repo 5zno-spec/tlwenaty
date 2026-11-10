@@ -380,7 +380,7 @@ COLORS.forEach((c,i)=>{
   const b=document.createElement("button");
   b.className="sw";b.style.background=c;b.dataset.c=c;b.setAttribute("role","radio");
   b.setAttribute("aria-label","لون "+(i+1));b.setAttribute("aria-checked",i===0);
-  b.onclick=()=>{st.color=c;st.ci=i;setErase(false);sfx.pick(i);[...$("palette").children].forEach(x=>x.setAttribute("aria-checked",x===b))};
+  b.onclick=()=>{st.color=c;st.ci=i;setErase(false);sfx.pick(i);saveProg();[...$("palette").children].forEach(x=>x.setAttribute("aria-checked",x===b))};
   $("palette").appendChild(b);
 });
 Object.keys(SCENES).forEach(n=>{
@@ -389,6 +389,18 @@ Object.keys(SCENES).forEach(n=>{
   b.innerHTML=ICONS[n]+"<span>"+n+"</span>";
   b.onclick=()=>{show(n);sfx.scene();closeGl()};$("scenes").appendChild(b);
 });
+/* حفظ التقدم تلقائياً على هذا الجهاز: ألوان كل رسمة على حدة، الرسمة الحالية، واللون المختار */
+const PKEY="tlwenaty_progress_v1";
+const PROG={scene:null,ci:0,fills:{}};
+try{const o=JSON.parse(localStorage.getItem(PKEY)||"null");
+  if(o&&typeof o==="object"){if(typeof o.scene==="string")PROG.scene=o.scene;if(Number.isInteger(o.ci))PROG.ci=o.ci;
+    if(o.fills&&typeof o.fills==="object")PROG.fills=o.fills}}catch(e){}
+function saveProg(){
+  try{const m={};
+    document.querySelectorAll("#art .r").forEach((r,i)=>{const f=r.getAttribute("fill");if(f&&f!=="#ffffff")m[i]=f});
+    PROG.fills[st.scene]=m;PROG.scene=st.scene;PROG.ci=st.ci;
+    localStorage.setItem(PKEY,JSON.stringify(PROG))}catch(e){}
+}
 /* النافذة الزجاجية لاختيار الرسمة */
 const gl=$("glassWin");let glFrom=null;
 function openGl(){glFrom=document.activeElement;gl.hidden=false;($("scenes").querySelector('[aria-pressed="true"]')||$("scenes").firstChild).focus()}
@@ -414,11 +426,14 @@ function show(name){st.scene=name;st.mile=0;
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
   $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="رسمة ${name} للتلوين">${SCENES[name]}</svg>`;
   layout();
-  document.querySelectorAll("#art .r").forEach(r=>{
-    r.setAttribute("fill","#ffffff");
+  const saved=(Object.prototype.hasOwnProperty.call(PROG.fills,name)&&PROG.fills[name])||{};
+  document.querySelectorAll("#art .r").forEach((r,i)=>{
+    const sc=saved[i];r.setAttribute("fill",COLORS.includes(sc)?sc:"#ffffff");
     r.addEventListener("click",ev=>{const was=r.getAttribute("fill")!=="#ffffff";r.setAttribute("fill",st.erase?"#ffffff":st.color);const bub=st.scene==="السمكة"&&r.tagName==="circle"&&+r.getAttribute("r")<=14;st.erase?sfx.erase():sfx.fill(bub);
+      saveProg();
       if(!st.erase&&!was&&st.color!=="#ffffff")onProgress(ev,r)});
   });
+  st.mile=Math.floor(progressRatio()*4);saveProg();
 }
 function cursorSvg(){
   const body=st.erase
@@ -434,7 +449,7 @@ function setErase(on){st.erase=on;updateCursor();$("erase").setAttribute("aria-p
   if(on)[...$("palette").children].forEach(x=>x.setAttribute("aria-checked",false));
   else [...$("palette").children].forEach(x=>x.setAttribute("aria-checked",x.style.background===""?false:x.dataset.c===st.color))}
 $("erase").onclick=()=>{setErase(!st.erase);sfx.tool(st.erase)};
-$("reset").onclick=()=>{sfx.reset();st.mile=0;document.querySelectorAll("#art .r").forEach(r=>r.setAttribute("fill","#ffffff"))};
+$("reset").onclick=()=>{sfx.reset();st.mile=0;document.querySelectorAll("#art .r").forEach(r=>r.setAttribute("fill","#ffffff"));saveProg()};
 let saveNoMem=0;
 function nextSaveNo(){ // رقم تسلسلي يبقى محفوظاً بين مرات فتح اللعبة
   let n;
@@ -497,7 +512,10 @@ function layout(){
   art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(innerWidth/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
 }
 addEventListener("resize",layout);
-show("البيت");layout();updateCursor();
+if(PROG.ci>=0&&PROG.ci<COLORS.length){st.ci=PROG.ci;st.color=COLORS[PROG.ci];
+  [...$("palette").children].forEach((x,k)=>x.setAttribute("aria-checked",k===st.ci))}
+show(Object.prototype.hasOwnProperty.call(SCENES,PROG.scene)?PROG.scene:"البيت");layout();updateCursor();
+try{$("palette").children[st.ci].scrollIntoView({inline:"nearest",block:"nearest"})}catch(e){}
 // تسجيل خدمة العمل (تعمل فقط عند التشغيل من موقع http/https)
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
