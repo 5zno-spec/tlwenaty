@@ -71,7 +71,7 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 /* الألوان مرصوصة فوق بعضها على اليمين */
 #palette{position:fixed;right:max(10px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);
   display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--panel);border:2px solid var(--line);border-radius:30px}
-.sw{--s:min(44px,calc((100dvh - 90px) / 12));width:var(--s);height:var(--s);min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
+.sw{--s:var(--sw,min(44px,calc((100dvh - 90px) / 12)));width:var(--s);height:var(--s);min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
 .sw[aria-checked="true"]{outline:4px solid var(--ring);outline-offset:2px;transform:scale(1.1)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -101,6 +101,8 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
   100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.06)}}
 @keyframes bubFade{0%{opacity:0}15%,70%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.bub{animation-name:bubFade}}
+/* وضع الحاسوب: الرسمة تأخذ المساحة الفاضية بين الأزرار فلا تغطيها، ولوحة الألوان تلتصق بالرسمة (المواضع الدقيقة يضبطها layout()) */
+@media (min-width:700px){#stage{top:100px;bottom:96px;left:90px;right:90px}}
 </style>
 </head>
 <body>
@@ -358,6 +360,7 @@ function show(name){st.scene=name;st.mile=0;
   
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
   $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="رسمة ${name} للتلوين">${SCENES[name]}</svg>`;
+  layout();
   document.querySelectorAll("#art .r").forEach(r=>{
     r.setAttribute("fill","#ffffff");
     r.addEventListener("click",ev=>{const was=r.getAttribute("fill")!=="#ffffff";r.setAttribute("fill",st.erase?"#ffffff":st.color);const bub=st.scene==="السمكة"&&r.tagName==="circle"&&+r.getAttribute("r")<=14;st.erase?sfx.erase():sfx.fill(bub);
@@ -411,7 +414,26 @@ function setMuted(m){
 }
 $("sound").onclick=()=>{setMuted(!muted);if(!muted)sfx.pick(7)};
 setMuted(muted);
-show("البيت");updateCursor();
+function layout(){
+  const stg=$("stage"),pal=$("palette");
+  if(innerWidth<700){stg.removeAttribute("style");pal.style.left=pal.style.right=pal.style.top="";pal.style.removeProperty("--sw");return}
+  const gap=12,tb=$("top").getBoundingClientRect().bottom,ab=$("actions").getBoundingClientRect().top;
+  stg.style.top=(tb+gap)+"px";stg.style.bottom=Math.max(0,innerHeight-ab+gap)+"px";stg.style.left=stg.style.right="90px";
+  const art=$("art");if(!art)return;
+  const r=stg.getBoundingClientRect(),k=Math.min(r.width/400,r.height/300),ox=r.left+(r.width-400*k)/2;
+  let mx=-1e9;/* حدود الرسمة الفعلية: نتجاهل مستطيلات الخلفية الضخمة التي تتجاوز الـviewBox */
+  [...art.children].forEach(e=>{try{const b=e.getBBox();if(b.width<=420&&b.height<=320)mx=Math.max(mx,b.x+b.width)}catch(_){}});
+  if(mx<0)mx=400;
+  const edge=ox+Math.min(400,mx)*k+3*k,pw=pal.offsetWidth;
+  /* دوائر الألوان تصغر عند الحاجة لتبقى اللوحة بين الشريطين العلوي والسفلي */
+  pal.style.setProperty("--sw",Math.max(26,Math.min(44,Math.floor((r.height-86)/12)))+"px");
+  pal.style.right="auto";
+  pal.style.left=Math.max(8,Math.min(edge+18,innerWidth-pw-10))+"px";
+  const ph=pal.offsetHeight;
+  pal.style.top=Math.max(ph/2+8,Math.min(r.top+r.height/2,innerHeight-ph/2-8))+"px";
+}
+addEventListener("resize",layout);
+show("البيت");layout();updateCursor();
 // تسجيل خدمة العمل (تعمل فقط عند التشغيل من موقع http/https)
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
