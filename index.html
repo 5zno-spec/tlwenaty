@@ -414,22 +414,38 @@ function setMuted(m){
 }
 $("sound").onclick=()=>{setMuted(!muted);if(!muted)sfx.pick(7)};
 setMuted(muted);
+/* حدود الرسمة الفعلية بوحدات الـviewBox (نتجاهل مستطيلات الخلفية الضخمة)؛ نقيسها وهي بوضعها الأساسي */
+function contentBox(art){
+  art.removeAttribute("style");
+  const sr=art.getBoundingClientRect(),k0=Math.min(sr.width/400,sr.height/300),
+    ox=sr.left+(sr.width-400*k0)/2,oy=sr.top+(sr.height-300*k0)/2;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  [...art.children].forEach(e=>{const b=e.getBoundingClientRect();
+    if(!b.width&&!b.height)return;
+    if(b.width/k0>420||b.height/k0>320)return;
+    x0=Math.min(x0,(b.left-ox)/k0);y0=Math.min(y0,(b.top-oy)/k0);
+    x1=Math.max(x1,(b.right-ox)/k0);y1=Math.max(y1,(b.bottom-oy)/k0)});
+  if(x1<x0)return{x0:0,y0:0,x1:400,y1:300};
+  return{x0,y0,x1,y1};
+}
+/* وضع الحاسوب: كل رسمة تتوسّط وتتكبّر بحسب حجمها الفعلي بين الشريطين، ولوحة الألوان تلتصق بحافتها اليمنى، والمجموعة كلها في منتصف الشاشة */
 function layout(){
-  const stg=$("stage"),pal=$("palette");
-  if(innerWidth<700){stg.removeAttribute("style");pal.style.left=pal.style.right=pal.style.top="";pal.style.removeProperty("--sw");return}
+  const stg=$("stage"),pal=$("palette"),art=$("art");
+  if(innerWidth<700){stg.removeAttribute("style");if(art)art.removeAttribute("style");
+    pal.style.left=pal.style.right=pal.style.top="";pal.style.removeProperty("--sw");return}
   const gap=12,tb=$("top").getBoundingClientRect().bottom,ab=$("actions").getBoundingClientRect().top;
-  stg.style.top=(tb+gap)+"px";stg.style.bottom=Math.max(0,innerHeight-ab+gap)+"px";stg.style.left=stg.style.right="90px";
-  const art=$("art");if(!art)return;
-  const r=stg.getBoundingClientRect(),k=Math.min(r.width/400,r.height/300),ox=r.left+(r.width-400*k)/2;
-  let mx=-1e9;/* حدود الرسمة الفعلية: نتجاهل مستطيلات الخلفية الضخمة التي تتجاوز الـviewBox */
-  [...art.children].forEach(e=>{try{const b=e.getBBox();if(b.width<=420&&b.height<=320)mx=Math.max(mx,b.x+b.width)}catch(_){}});
-  if(mx<0)mx=400;
-  const edge=ox+Math.min(400,mx)*k+3*k,pw=pal.offsetWidth;
+  stg.style.top=(tb+gap)+"px";stg.style.bottom=Math.max(0,innerHeight-ab+gap)+"px";stg.style.left=stg.style.right="0px";
+  if(!art)return;
+  const r=stg.getBoundingClientRect();
   /* دوائر الألوان تصغر عند الحاجة لتبقى اللوحة بين الشريطين العلوي والسفلي */
   pal.style.setProperty("--sw",Math.max(26,Math.min(44,Math.floor((r.height-86)/12)))+"px");
+  const bx=contentBox(art),pad=4,cw=bx.x1-bx.x0+2*pad,ch=bx.y1-bx.y0+2*pad,
+    g=18,pw=pal.offsetWidth,ph=pal.offsetHeight,
+    k=Math.min((innerWidth-pw-g-40)/cw,(r.height-8)/ch),
+    gl=(innerWidth-(cw*k+g+pw))/2;
+  art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(gl-(bx.x0-pad)*k)+"px;top:"+((r.height-ch*k)/2-(bx.y0-pad)*k)+"px";
   pal.style.right="auto";
-  pal.style.left=Math.max(8,Math.min(edge+18,innerWidth-pw-10))+"px";
-  const ph=pal.offsetHeight;
+  pal.style.left=(gl+cw*k+g)+"px";
   pal.style.top=Math.max(ph/2+8,Math.min(r.top+r.height/2,innerHeight-ph/2-8))+"px";
 }
 addEventListener("resize",layout);
