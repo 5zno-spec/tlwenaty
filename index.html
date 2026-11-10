@@ -45,11 +45,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#fff;color:var(--ink);
 svg .r{cursor:inherit;stroke:#3b2f2a;stroke-width:3;stroke-linejoin:round}
 
 .bar{position:fixed;left:50%;transform:translateX(-50%);width:max-content;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
-  padding:8px;background:var(--panel);border:2px solid var(--line);border-radius:18px;max-width:calc(100% - 110px)}
-#top{position:fixed;top:max(10px,env(safe-area-inset-top));left:10px;right:90px;display:flex;justify-content:center;align-items:flex-start;gap:8px;direction:ltr;pointer-events:none}
-#top>*{pointer-events:auto}
-@media (min-width:700px){#top{left:90px}}
-#scenes{position:static;transform:none;max-width:100%;min-width:0;direction:rtl}
+  padding:8px;background:var(--panel);border:2px solid var(--line);border-radius:18px;max-width:calc(100% - 20px)}
 #actions{bottom:max(10px,env(safe-area-inset-bottom))}
 button{font:inherit;color:var(--btn-ink);background:var(--btn);border:2px solid var(--line);border-radius:14px;padding:4px 16px;cursor:pointer;min-height:44px}
 button:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
@@ -58,7 +54,7 @@ button.ic svg{width:38px;height:38px;display:block;pointer-events:none;filter:dr
 #erase{background:#ffa94d;color:#33210f}
 #erase[aria-pressed="true"]{outline:4px solid var(--ring);outline-offset:2px;transform:scale(1.1)}
 #reset{background:#f0605d}
-#sound{background:#7ccf6a;width:44px;height:44px;margin-top:15px;flex:none}
+#sound{background:#7ccf6a}
 #sound svg{width:30px;height:30px;transform:translate(-.55px,-1.25px)}
 #sound[aria-pressed="true"] svg{transform:translate(-1.05px,-1.25px)}
 #sound[aria-pressed="true"]{background:#c9ced6}
@@ -68,11 +64,34 @@ button.ic svg{width:38px;height:38px;display:block;pointer-events:none;filter:dr
 #save{background:#6ec9f5;color:#10283a}
 button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 
-/* الألوان مرصوصة فوق بعضها على اليمين */
-#palette{position:fixed;right:max(10px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);
-  display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--panel);border:2px solid var(--line);border-radius:30px}
-.sw{--s:var(--sw,min(44px,calc((100dvh - 90px) / 12)));width:var(--s);height:var(--s);min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
+/* لوحة الألوان: شريط أفقي بالأعلى يُمرَّر يميناً وشمالاً (عجلة الفأرة أو السحب أو اللمس) */
+#palette{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 20px);
+  display:flex;flex-direction:row;gap:8px;padding:10px 14px;background:var(--panel);border:2px solid var(--line);border-radius:36px;
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+.sw{flex:none;width:40px;height:40px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
 .sw[aria-checked="true"]{outline:4px solid var(--ring);outline-offset:2px;transform:scale(1.1)}
+/* نافذة زجاجية لاختيار الرسمة */
+.gl{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,16,30,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.gl[hidden]{display:none}
+.glass{width:min(440px,100%);max-height:100%;overflow:auto;padding:16px;border-radius:28px;color:var(--ink);
+  background:rgba(255,255,255,.34);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);
+  border:1.5px solid rgba(255,255,255,.6);box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.7)}
+.glh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.glh h2{margin:0;font-size:22px}
+#glassX{width:44px;height:44px;background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.8);color:var(--btn-ink)}
+#glassX svg{width:20px;height:20px;filter:none}
+#scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+#scenes button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:108px;padding:8px 6px;border-radius:22px;
+  background:rgba(255,255,255,.6);border:2px solid rgba(255,255,255,.85);color:#3b2f2a;font-size:16px}
+#scenes button svg{width:58px;height:58px;display:block;pointer-events:none;filter:drop-shadow(0 1.5px 1px rgba(0,0,0,.28))}
+#scenes button[aria-pressed="true"]{background:#3b2f2a;color:#fff8ea;border-color:#3b2f2a}
+@media (prefers-color-scheme:dark){
+  .gl{background:rgba(0,0,0,.35)}
+  .glass{background:rgba(40,32,36,.42);border-color:rgba(255,255,255,.25)}
+  #scenes button{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#f6ead8}
+  #scenes button[aria-pressed="true"]{background:#f6ead8;color:#3b2f2a;border-color:#f6ead8}
+  #glassX{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35);color:#f6ead8}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* ===== الواجهة الأولية ===== */
@@ -101,8 +120,6 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
   100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.06)}}
 @keyframes bubFade{0%{opacity:0}15%,70%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.bub{animation-name:bubFade}}
-/* وضع الحاسوب: الرسمة تأخذ المساحة الفاضية بين الأزرار فلا تغطيها، ولوحة الألوان تلتصق بالرسمة (المواضع الدقيقة يضبطها layout()) */
-@media (min-width:700px){#stage{top:100px;bottom:96px;left:90px;right:90px}}
 </style>
 </head>
 <body>
@@ -127,10 +144,6 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 </script>
 <div id="stage"></div>
 <div id="fx" aria-hidden="true"></div>
-<div id="top">
-  <button class="ic" id="sound" aria-pressed="false" aria-label="كتم الصوت" title="كتم الصوت"><svg viewBox="0 0 48 48"><defs><linearGradient id="gk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fafbfd"/><stop offset="1" stop-color="#aeb8c8"/></linearGradient></defs><path d="M6 19a2 2 0 0 1 2-2h7l11-9a1.5 1.5 0 0 1 2.5 1.2v33.6A1.5 1.5 0 0 1 26 44l-11-9H8a2 2 0 0 1-2-2z" fill="url(#gk)" stroke="#5f6b7d" stroke-width="1.4" stroke-linejoin="round"/><g class="waves" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M33 18a9 9 0 0 1 0 12"/><path d="M38 12a17 17 0 0 1 0 24"/></g><g class="slash" stroke-linecap="round"><path d="M32 19l11 11M43 19L32 30" stroke="#fff" stroke-width="6.5"/><path d="M32 19l11 11M43 19L32 30" stroke="#e23d3a" stroke-width="3.4"/></g></svg></button>
-  <div class="bar" id="scenes" role="group" aria-label="اختر رسمة"></div>
-</div>
 <div id="palette" role="radiogroup" aria-label="الألوان"></div>
 <div class="bar" id="actions">
   <button class="ic" id="erase" aria-pressed="false" aria-label="ممحاة: تمسح الجزء الذي تضغط عليه" title="ممحاة"><svg viewBox="0 0 48 48"><defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c7"/><stop offset="1" stop-color="#ee7b9c"/></linearGradient><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fa8ef"/><stop offset="1" stop-color="#2d6fc4"/></linearGradient></defs>
@@ -142,6 +155,14 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 <path d="M8 5h27l7 7v30a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="url(#gd)"/>
 <rect x="13" y="5" width="20" height="13" rx="1.5" fill="url(#gs)"/><rect x="26" y="7.5" width="4.5" height="8" rx="1" fill="#59677f"/>
 <rect x="10" y="25" width="28" height="19" rx="1.5" fill="#fbfbf7"/><rect x="13" y="30" width="22" height="1.8" fill="#c7ccd6"/><rect x="13" y="34.5" width="22" height="1.8" fill="#c7ccd6"/><rect x="13" y="39" width="14" height="1.8" fill="#c7ccd6"/></svg></button>
+  <button class="ic" id="sound" aria-pressed="false" aria-label="كتم الصوت" title="كتم الصوت"><svg viewBox="0 0 48 48"><defs><linearGradient id="gk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fafbfd"/><stop offset="1" stop-color="#aeb8c8"/></linearGradient></defs><path d="M6 19a2 2 0 0 1 2-2h7l11-9a1.5 1.5 0 0 1 2.5 1.2v33.6A1.5 1.5 0 0 1 26 44l-11-9H8a2 2 0 0 1-2-2z" fill="url(#gk)" stroke="#5f6b7d" stroke-width="1.4" stroke-linejoin="round"/><g class="waves" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M33 18a9 9 0 0 1 0 12"/><path d="M38 12a17 17 0 0 1 0 24"/></g><g class="slash" stroke-linecap="round"><path d="M32 19l11 11M43 19L32 30" stroke="#fff" stroke-width="6.5"/><path d="M32 19l11 11M43 19L32 30" stroke="#e23d3a" stroke-width="3.4"/></g></svg></button>
+  <button class="ic" id="scenesBtn" type="button" aria-haspopup="dialog" aria-label="اختر رسمة" title="الرسومات"></button>
+</div>
+<div class="gl" id="glassWin" hidden>
+  <div class="glass" role="dialog" aria-modal="true" aria-labelledby="glassTitle">
+    <div class="glh"><h2 id="glassTitle">اختر رسمة</h2><button class="ic" id="glassX" type="button" aria-label="إغلاق" title="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div id="scenes" role="group" aria-label="الرسومات"></div>
+  </div>
 </div>
 
 <script>
@@ -352,11 +373,31 @@ COLORS.forEach((c,i)=>{
 });
 Object.keys(SCENES).forEach(n=>{
   const b=document.createElement("button");
-  b.className="ic";b.dataset.name=n;b.title=n;b.setAttribute("aria-label",n);
-  b.innerHTML=ICONS[n];
-  b.onclick=()=>{show(n);sfx.scene()};$("scenes").appendChild(b);
+  b.dataset.name=n;b.title=n;b.setAttribute("aria-label",n);
+  b.innerHTML=ICONS[n]+"<span>"+n+"</span>";
+  b.onclick=()=>{show(n);sfx.scene();closeGl()};$("scenes").appendChild(b);
 });
-function show(name){st.scene=name;st.mile=0;
+/* النافذة الزجاجية لاختيار الرسمة */
+const gl=$("glassWin");let glFrom=null;
+function openGl(){glFrom=document.activeElement;gl.hidden=false;($("scenes").querySelector('[aria-pressed="true"]')||$("scenes").firstChild).focus()}
+function closeGl(){if(gl.hidden)return;gl.hidden=true;try{(glFrom&&glFrom.isConnected?glFrom:$("scenesBtn")).focus()}catch(_){}}
+$("scenesBtn").onclick=openGl;$("glassX").onclick=closeGl;
+gl.addEventListener("click",e=>{if(e.target===gl)closeGl()});
+addEventListener("keydown",e=>{if(gl.hidden)return;
+  if(e.key==="Escape"){closeGl();return}
+  if(e.key==="Tab"){const f=[...gl.querySelectorAll("button")],i=f.indexOf(document.activeElement);
+    if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus()}
+    else if(!e.shiftKey&&(i===-1||i===f.length-1)){e.preventDefault();f[0].focus()}}});
+/* لوحة الألوان الأفقية: عجلة الفأرة والسحب بالفأرة (اللمس يمرَّر تلقائياً)، وتُظهر اللون المختار */
+(function(){const pal=$("palette");let d=null,moved=false;
+  pal.addEventListener("wheel",e=>{if(pal.scrollWidth<=pal.clientWidth)return;e.preventDefault();pal.scrollBy({left:e.deltaY||e.deltaX})},{passive:false});
+  pal.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")return;d={x:e.clientX,s:pal.scrollLeft};moved=false});
+  addEventListener("pointermove",e=>{if(!d)return;const dx=e.clientX-d.x;if(Math.abs(dx)>5)moved=true;if(moved)pal.scrollLeft=d.s-dx});
+  addEventListener("pointerup",()=>{d=null});
+  pal.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;return}
+    const b=e.target.closest(".sw");if(b)b.scrollIntoView({inline:"nearest",block:"nearest"})},true);
+})();
+function show(name){st.scene=name;st.mile=0;$("scenesBtn").innerHTML=ICONS[name];
   
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
   $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="رسمة ${name} للتلوين">${SCENES[name]}</svg>`;
@@ -432,28 +473,16 @@ function boxOf(name){
   h.remove();
   return BOXES[name]=x1<x0?{x0:0,y0:0,x1:400,y1:300}:{x0,y0,x1,y1};
 }
-/* وضع الحاسوب: مقياس واحد لكل الرسومات (يُحسب من أكبرها)، ولوحة الألوان ثابتة عند حافة أعرض رسمة فلا تتحرك عند التبديل؛
-   كل رسمة تتوسّط داخل هذا الإطار الثابت */
+/* مقياس واحد لكل الرسومات (يُحسب من أكبرها) فلا يتغير الحجم عند التبديل؛ والرسمة تتوسط بين لوحة الألوان بالأعلى وشريط الأزرار بالأسفل فلا تغطيها الأزرار */
 function layout(){
-  const stg=$("stage"),pal=$("palette"),art=$("art");
-  if(innerWidth<700){stg.removeAttribute("style");if(art)art.removeAttribute("style");
-    pal.style.left=pal.style.right=pal.style.top="";pal.style.removeProperty("--sw");return}
-  const gap=12,tb=$("top").getBoundingClientRect().bottom,ab=$("actions").getBoundingClientRect().top;
+  const stg=$("stage"),art=$("art"),gap=10,
+    tb=$("palette").getBoundingClientRect().bottom,ab=$("actions").getBoundingClientRect().top;
   stg.style.top=(tb+gap)+"px";stg.style.bottom=Math.max(0,innerHeight-ab+gap)+"px";stg.style.left=stg.style.right="0px";
   if(!art)return;
-  const r=stg.getBoundingClientRect();
-  /* دوائر الألوان تصغر عند الحاجة لتبقى اللوحة بين الشريطين العلوي والسفلي */
-  pal.style.setProperty("--sw",Math.max(26,Math.min(44,Math.floor((r.height-86)/12)))+"px");
-  const pad=4;let W=0,H=0;
+  const r=stg.getBoundingClientRect(),pad=4;let W=0,H=0;
   Object.keys(SCENES).forEach(n=>{const b=boxOf(n);W=Math.max(W,b.x1-b.x0+2*pad);H=Math.max(H,b.y1-b.y0+2*pad)});
-  const g=18,pw=pal.offsetWidth,ph=pal.offsetHeight,
-    k=Math.min((innerWidth-pw-g-40)/W,(r.height-8)/H),
-    gl=(innerWidth-(W*k+g+pw))/2,
-    b=boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
-  art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(gl+W*k/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
-  pal.style.right="auto";
-  pal.style.left=(gl+W*k+g)+"px";
-  pal.style.top=Math.max(ph/2+8,Math.min(r.top+r.height/2,innerHeight-ph/2-8))+"px";
+  const k=Math.min((innerWidth-24)/W,(r.height-8)/H),b=boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
+  art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(innerWidth/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
 }
 addEventListener("resize",layout);
 show("البيت");layout();updateCursor();
