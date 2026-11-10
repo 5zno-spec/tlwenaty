@@ -23,6 +23,11 @@
 <meta name="twitter:image" content="og-image.jpg">
 <meta name="twitter:image:alt" content="شعار تلويناتي: فرشاة وممحاة مبتسمتان بين إيموجي مبتسمة">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="تلويناتي">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -407,6 +412,10 @@ function setMuted(m){
 $("sound").onclick=()=>{setMuted(!muted);if(!muted)sfx.pick(7)};
 setMuted(muted);
 show("البيت");updateCursor();
+// تسجيل خدمة العمل (تعمل فقط عند التشغيل من موقع http/https)
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
 </script>
 </body>
 </html>
@@ -431,4 +440,10 @@ show("البيت");updateCursor();
 الوسوم موجودة في أعلى `index.html`، والصورة في `og-image.jpg` (1200×630). بعد النشر على Vercel:
 1. افتح `index.html` وغيّر قيمتي `og:image` و`twitter:image` من `og-image.jpg` إلى الرابط الكامل، مثل `https://اسم-موقعك.vercel.app/og-image.jpg`، لأن بعض المنصات (مثل واتساب) تشترط رابطاً كاملاً.
 2. المنصات تحفظ المعاينة القديمة مؤقتاً. بعد التعديل جرّب الرابط في أداة فيسبوك للتصحيح (Sharing Debugger) لتحديثها.
+
+## التثبيت كتطبيق (PWA)
+اللعبة قابلة للتثبيت على الجوال والكمبيوتر وتعمل بدون إنترنت بعد أول فتح. تعمل هذه الميزة عند فتحها من رابط `https` (مثل Vercel) وليس من الملف مباشرة.
+- `manifest.webmanifest`: اسم التطبيق وألوانه وأيقوناته.
+- `sw.js`: خدمة العمل التي تحفظ الملفات للاستخدام بدون إنترنت. **عند تعديل أي ملف غيّر رقم `CACHE` في أول `sw.js`** (مثلاً `talwinati-v2`) حتى تصل التحديثات للمستخدمين.
+- `icon-192.png` و`icon-512.png` و`icon-maskable-512.png`: أيقونات التطبيق.
 -->
