@@ -414,21 +414,26 @@ function setMuted(m){
 }
 $("sound").onclick=()=>{setMuted(!muted);if(!muted)sfx.pick(7)};
 setMuted(muted);
-/* حدود الرسمة الفعلية بوحدات الـviewBox (نتجاهل مستطيلات الخلفية الضخمة)؛ نقيسها وهي بوضعها الأساسي */
-function contentBox(art){
-  art.removeAttribute("style");
-  const sr=art.getBoundingClientRect(),k0=Math.min(sr.width/400,sr.height/300),
-    ox=sr.left+(sr.width-400*k0)/2,oy=sr.top+(sr.height-300*k0)/2;
+/* حدود كل رسمة الفعلية بوحدات الـviewBox (نتجاهل مستطيلات الخلفية الضخمة)، تُقاس مرة واحدة خارج الشاشة */
+const BOXES={};
+function boxOf(name){
+  if(BOXES[name])return BOXES[name];
+  const h=document.createElement("div");
+  h.style.cssText="position:fixed;left:-9999px;top:0;width:400px;height:300px;visibility:hidden;pointer-events:none";
+  h.innerHTML='<svg viewBox="0 0 400 300" width="400" height="300">'+SCENES[name]+'</svg>';
+  document.body.appendChild(h);
+  const sv=h.firstChild,o=sv.getBoundingClientRect();
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-  [...art.children].forEach(e=>{const b=e.getBoundingClientRect();
+  [...sv.children].forEach(e=>{const b=e.getBoundingClientRect();
     if(!b.width&&!b.height)return;
-    if(b.width/k0>420||b.height/k0>320)return;
-    x0=Math.min(x0,(b.left-ox)/k0);y0=Math.min(y0,(b.top-oy)/k0);
-    x1=Math.max(x1,(b.right-ox)/k0);y1=Math.max(y1,(b.bottom-oy)/k0)});
-  if(x1<x0)return{x0:0,y0:0,x1:400,y1:300};
-  return{x0,y0,x1,y1};
+    if(b.width>420||b.height>320)return;
+    x0=Math.min(x0,b.left-o.left);y0=Math.min(y0,b.top-o.top);
+    x1=Math.max(x1,b.right-o.left);y1=Math.max(y1,b.bottom-o.top)});
+  h.remove();
+  return BOXES[name]=x1<x0?{x0:0,y0:0,x1:400,y1:300}:{x0,y0,x1,y1};
 }
-/* وضع الحاسوب: كل رسمة تتوسّط وتتكبّر بحسب حجمها الفعلي بين الشريطين، ولوحة الألوان تلتصق بحافتها اليمنى، والمجموعة كلها في منتصف الشاشة */
+/* وضع الحاسوب: مقياس واحد لكل الرسومات (يُحسب من أكبرها)، ولوحة الألوان ثابتة عند حافة أعرض رسمة فلا تتحرك عند التبديل؛
+   كل رسمة تتوسّط داخل هذا الإطار الثابت */
 function layout(){
   const stg=$("stage"),pal=$("palette"),art=$("art");
   if(innerWidth<700){stg.removeAttribute("style");if(art)art.removeAttribute("style");
@@ -439,13 +444,15 @@ function layout(){
   const r=stg.getBoundingClientRect();
   /* دوائر الألوان تصغر عند الحاجة لتبقى اللوحة بين الشريطين العلوي والسفلي */
   pal.style.setProperty("--sw",Math.max(26,Math.min(44,Math.floor((r.height-86)/12)))+"px");
-  const bx=contentBox(art),pad=4,cw=bx.x1-bx.x0+2*pad,ch=bx.y1-bx.y0+2*pad,
-    g=18,pw=pal.offsetWidth,ph=pal.offsetHeight,
-    k=Math.min((innerWidth-pw-g-40)/cw,(r.height-8)/ch),
-    gl=(innerWidth-(cw*k+g+pw))/2;
-  art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(gl-(bx.x0-pad)*k)+"px;top:"+((r.height-ch*k)/2-(bx.y0-pad)*k)+"px";
+  const pad=4;let W=0,H=0;
+  Object.keys(SCENES).forEach(n=>{const b=boxOf(n);W=Math.max(W,b.x1-b.x0+2*pad);H=Math.max(H,b.y1-b.y0+2*pad)});
+  const g=18,pw=pal.offsetWidth,ph=pal.offsetHeight,
+    k=Math.min((innerWidth-pw-g-40)/W,(r.height-8)/H),
+    gl=(innerWidth-(W*k+g+pw))/2,
+    b=boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
+  art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(gl+W*k/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
   pal.style.right="auto";
-  pal.style.left=(gl+cw*k+g)+"px";
+  pal.style.left=(gl+W*k+g)+"px";
   pal.style.top=Math.max(ph/2+8,Math.min(r.top+r.height/2,innerHeight-ph/2-8))+"px";
 }
 addEventListener("resize",layout);
