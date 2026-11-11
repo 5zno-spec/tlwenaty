@@ -40,8 +40,11 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#fff;color:var(--ink);font-family:"Baloo Bhaijaan 2","Segoe UI",Tahoma,sans-serif}
-#stage{position:fixed;inset:0}
-#stage svg{width:100%;height:100%;display:block;overflow:visible;touch-action:manipulation}
+#stage{position:fixed;inset:0;touch-action:none}
+#stage svg{width:100%;height:100%;display:block;overflow:visible;touch-action:none;transform-origin:0 0}
+#zoomReset{position:fixed;left:12px;top:calc(max(10px,env(safe-area-inset-top)) + 82px);z-index:60;width:46px;height:46px;background:#ffe08a;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+#zoomReset[hidden]{display:none}
+#zoomReset svg{width:28px;height:28px}
 svg .r{cursor:inherit;stroke:#3b2f2a;stroke-width:3;stroke-linejoin:round}
 
 .bar{position:fixed;left:50%;transform:translateX(-50%);width:max-content;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
@@ -217,6 +220,7 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
   </div>
 </div>
 <div id="stage"></div>
+<button class="ic" id="zoomReset" type="button" hidden aria-label="إرجاع حجم الرسمة الطبيعي" title="إرجاع الحجم"><svg viewBox="0 0 28 28" fill="none" stroke="#3b2f2a" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M18 18l7 7M8.5 12h7"/></svg></button>
 <div id="fx" aria-hidden="true"></div>
 <div id="palette" role="radiogroup" aria-label="الألوان"></div>
 <div id="dock">
@@ -490,7 +494,7 @@ addEventListener("keydown",e=>{if(gl.hidden)return;
   pal.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;return}
     const b=e.target.closest(".sw");if(b)b.scrollIntoView({inline:"nearest",block:"nearest"})},true);
 })();
-function show(name){st.scene=name;st.mile=0;
+function show(name){st.scene=name;st.mile=0;resetZoom();
   
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
   $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="رسمة ${name} للتلوين">${SCENES[name]}</svg>`;
@@ -559,7 +563,7 @@ async function deliverImage(blob,name){
 }
 $("save").onclick=()=>{sfx.save();
   const svg=$("art").cloneNode(true);
-  svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  svg.removeAttribute("style");svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
   svg.setAttribute("width","1200");svg.setAttribute("height","900");
   svg.querySelectorAll(".r").forEach(r=>{r.setAttribute("stroke","#3b2f2a");r.setAttribute("stroke-width","3");r.setAttribute("stroke-linejoin","round")});
   const img=new Image();
@@ -609,8 +613,76 @@ function layout(){
   Object.keys(SCENES).forEach(n=>{const b=boxOf(n);W=Math.max(W,b.x1-b.x0+2*pad);H=Math.max(H,b.y1-b.y0+2*pad)});
   const k=Math.min((innerWidth-24)/W,(r.height-8)/H),b=boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
   art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(innerWidth/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
+  applyZoom();
 }
 addEventListener("resize",layout);
+
+/* تكبير/تصغير ورقة التلوين بإصبعين (أو عجلة الفأرة) وتحريكها بإصبع واحد وهي مكبّرة */
+var Z={z:1,tx:0,ty:0},ZMIN=1,ZMAX=5;
+function bx(a){return{L:parseFloat(a.style.left)||0,T:parseFloat(a.style.top)||0,w:parseFloat(a.style.width)||0,h:parseFloat(a.style.height)||0}} /* موضع ومقاس الرسمة قبل التكبير (عنصر SVG لا يملك offsetLeft) */
+function applyZoom(){
+  const art=$("art"),stg=$("stage");
+  if(Z.z<=1.001){Z.z=1;Z.tx=Z.ty=0}
+  else if(art){ /* نُبقي جزءاً من الورقة ظاهراً دائماً */
+    const m=60,L=bx(art).L,T=bx(art).T,w=bx(art).w*Z.z,h=bx(art).h*Z.z;
+    Z.tx=Math.min(stg.clientWidth-m-L,Math.max(m-w-L,Z.tx));
+    Z.ty=Math.min(stg.clientHeight-m-T,Math.max(m-h-T,Z.ty));
+  }
+  if(art)art.style.transform=Z.z===1?"":"translate("+Z.tx+"px,"+Z.ty+"px) scale("+Z.z+")";
+  $("zoomReset").hidden=Z.z===1;
+}
+function resetZoom(){Z.z=1;Z.tx=Z.ty=0;applyZoom()}
+(function(){
+  const stg=$("stage"),pts=new Map();let g=null,block=false,blockT=0;
+  const rect=()=>stg.getBoundingClientRect();
+  function snap(){ /* يلتقط نقطة البداية للإصبع أو الإصبعين الحاليين */
+    const a=[...pts.values()],art=$("art"),r=rect();if(!art)return;
+    if(a.length>=2){
+      const mx=(a[0].x+a[1].x)/2-r.left,my=(a[0].y+a[1].y)/2-r.top;
+      g={mode:"pinch",d0:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,z0:Z.z,
+         lx:(mx-bx(art).L-Z.tx)/Z.z,ly:(my-bx(art).T-Z.ty)/Z.z,moved:true};
+    }else if(a.length===1){
+      g={mode:"pan",x0:a[0].x,y0:a[0].y,tx0:Z.tx,ty0:Z.ty,moved:g?g.moved:false};
+    }
+  }
+  stg.addEventListener("pointerdown",e=>{
+    if(!$("art"))return;
+    if(!pts.size){block=false;clearTimeout(blockT);g=null}
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});snap();
+  });
+  addEventListener("pointermove",e=>{
+    const p=pts.get(e.pointerId),art=$("art");if(!p||!g||!art)return;
+    p.x=e.clientX;p.y=e.clientY;
+    if(g.mode==="pinch"&&pts.size>=2){
+      const a=[...pts.values()],r=rect(),mx=(a[0].x+a[1].x)/2-r.left,my=(a[0].y+a[1].y)/2-r.top,
+        nz=Math.min(ZMAX,Math.max(ZMIN,g.z0*Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)/g.d0));
+      Z.z=nz;Z.tx=mx-bx(art).L-nz*g.lx;Z.ty=my-bx(art).T-nz*g.ly;applyZoom();
+    }else if(g.mode==="pan"&&Z.z>1){
+      const dx=p.x-g.x0,dy=p.y-g.y0;
+      if(!g.moved&&Math.hypot(dx,dy)>8)g.moved=true; /* حركة صغيرة تبقى نقرة تلوين عادية */
+      if(g.moved){Z.tx=g.tx0+dx;Z.ty=g.ty0+dy;applyZoom()}
+    }
+  });
+  function up(e){
+    if(!pts.has(e.pointerId))return;
+    pts.delete(e.pointerId);
+    if(pts.size){snap();return}
+    if(g&&g.moved){block=true;clearTimeout(blockT);blockT=setTimeout(()=>{block=false},350)}
+    g=null;
+  }
+  addEventListener("pointerup",up);addEventListener("pointercancel",up);
+  /* بعد التحريك أو التكبير لا نُحسب النقرة تلويناً */
+  stg.addEventListener("click",e=>{if(block){e.stopPropagation();e.preventDefault()}},true);
+  stg.addEventListener("wheel",e=>{
+    const art=$("art");if(!art)return;e.preventDefault();
+    const r=rect(),px=e.clientX-r.left,py=e.clientY-r.top,
+      nz=Math.min(ZMAX,Math.max(ZMIN,Z.z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))),
+      lx=(px-bx(art).L-Z.tx)/Z.z,ly=(py-bx(art).T-Z.ty)/Z.z;
+    Z.z=nz;Z.tx=px-bx(art).L-nz*lx;Z.ty=py-bx(art).T-nz*ly;applyZoom();
+  },{passive:false});
+  $("zoomReset").onclick=resetZoom;
+  ["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault())); /* يمنع تكبير الصفحة نفسها في سفاري */
+})();
 if(PROG.ci>=0&&PROG.ci<COLORS.length){st.ci=PROG.ci;st.color=COLORS[PROG.ci];
   [...$("palette").children].forEach((x,k)=>x.setAttribute("aria-checked",k===st.ci))}
 show(Object.prototype.hasOwnProperty.call(SCENES,PROG.scene)?PROG.scene:"البيت");layout();updateCursor();
