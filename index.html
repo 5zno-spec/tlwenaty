@@ -68,8 +68,11 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 #dock{position:fixed;left:0;right:0;bottom:max(10px,env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:stretch;gap:10px;padding:0 10px;direction:ltr;pointer-events:none}
 #dock>*{pointer-events:auto;direction:rtl}
 #dock .bar{position:static;transform:none;max-width:none;flex:0 1 auto}
-@media (max-width:360px){#dock{gap:6px}#dock .bar{gap:6px}#dock .ic{width:46px;height:46px}#dock .ic svg{width:32px;height:32px}#sound svg{width:26px;height:26px}}
-@media (max-width:340px){#dock{gap:4px;padding:0 6px}#dock .bar{gap:4px;padding:6px}#dock .ic{width:40px;height:40px}#dock .ic svg{width:28px;height:28px}#sound svg{width:23px;height:23px}}
+/* أزرار الشريط السفلي تتناسب مع عرض الشاشة فلا تنضغط أبداً: الحد الأعلى 54px */
+#dock{--ic:clamp(34px,calc((100vw - 122px)/5),54px)}
+#dock .ic{flex:none;width:var(--ic);height:var(--ic);min-height:0}
+#dock .ic svg{width:calc(var(--ic)*.7);height:calc(var(--ic)*.7)}
+#dock #sound svg{width:calc(var(--ic)*.56);height:calc(var(--ic)*.56)}
 /* لوحة الألوان: شريط أفقي بالأعلى يُمرَّر يميناً وشمالاً (عجلة الفأرة أو السحب أو اللمس) */
 #palette{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 20px);
   display:flex;flex-direction:row;gap:8px;padding:10px 14px;background:var(--panel);border:2px solid var(--line);border-radius:36px;
