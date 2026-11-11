@@ -584,6 +584,7 @@ function saveProg(){
     PROG.fills[st.scene]=m;PROG.scene=st.scene;PROG.ci=st.ci;
     if(st.scene===FREE)PROG.ink[FREE]=INK.map(q=>({c:q.c,p:q.p,w:q.w||INKW}));
     if(st.scene===FREE)PROG.ink[FREE+"#f"]=FILLS.map(f=>({c:f.c,r:f.r}));
+    if(st.scene===FREE){if(INK.length||FILLS.length)PROG.ink[FREE+"#d"]=[CW,CH];else delete PROG.ink[FREE+"#d"]}
     localStorage.setItem(PKEY,JSON.stringify(PROG))}catch(e){}
 }
 /* النافذة الزجاجية لاختيار الرسمة */
@@ -608,6 +609,24 @@ addEventListener("keydown",e=>{if(gl.hidden)return;
 })();
 /* ===== لوحة «ارسم ولون»: قلم للرسم الحر، يظهر على يمين لوحة الألوان في هذه اللوحة فقط ===== */
 const FREE="ارسم ولون",INKW=5,BRUSHW=26,INK=[],FILLS=[],FILLMAX=40;
+/* مقاس لوحة الرسم الحر يتبع شكل الشاشة ليملأ المساحة بين الألوان والأزرار السفلية، ويُحفظ مع الرسم */
+let CW=400,CH=300;
+function freeFrame(){return '<rect class="r" x="2" y="2" width="'+(CW-4)+'" height="'+(CH-4)+'" rx="10"/>'}
+function chooseDims(){
+  const io=PROG.ink||{},d=io[FREE],f=io[FREE+"#f"],dm=io[FREE+"#d"];
+  if(Array.isArray(dm)&&dm.length===2&&dm.every(v=>Number.isInteger(v)&&v>=100&&v<=1000)){CW=dm[0];CH=dm[1];return}
+  const tb=$("palette").getBoundingClientRect().bottom,ab=$("actions").getBoundingClientRect().top;
+  const a=Math.min(2.5,Math.max(.4,(innerWidth-24)/Math.max(100,ab-tb-28)));
+  if((Array.isArray(d)&&d.length)||(Array.isArray(f)&&f.length)){
+    /* رسم قديم بمقاس 400×300: نوسّع اللوحة لتملأ الشاشة ونضع الرسم القديم في وسطها */
+    if(a>=4/3){CH=300;CW=Math.round(300*a)}else{CW=400;CH=Math.round(400/a)}
+    const dx=Math.round((CW-400)/2),dy=Math.round((CH-300)/2);
+    if(Array.isArray(d))d.forEach(q=>{if(q&&Array.isArray(q.p))q.p=q.p.map(v=>Array.isArray(v)?[+v[0]+dx,+v[1]+dy]:v)});
+    if(Array.isArray(f))f.forEach(q=>{if(q&&Array.isArray(q.r))for(let i=0;i+2<q.r.length;i+=3){q.r[i]+=dy;q.r[i+1]+=dx;q.r[i+2]+=dx}});
+    io[FREE+"#d"]=[CW,CH];return;
+  }
+  CW=Math.round(Math.sqrt(120000*a));CH=Math.round(Math.sqrt(120000/a));
+}
 function inkTool(){return st.scene===FREE&&(st.pen||st.erase)}
 function isDone(n){const f=PROG.fills&&PROG.fills[n];return !!((f&&Object.keys(f).length)||(n===FREE&&PROG.ink&&Array.isArray(PROG.ink[n])&&PROG.ink[n].length))}
 function syncPen(){const on=!!(st.pen&&!st.erase);$("pen").setAttribute("aria-pressed",on&&!st.brush);$("bigbrush").setAttribute("aria-pressed",on&&!!st.brush)}
@@ -628,7 +647,7 @@ function loadInk(){
   const fa=PROG.ink&&PROG.ink[FREE+"#f"];
   if(Array.isArray(fa))fa.slice(0,FILLMAX).forEach(o=>{
     if(!o||!COLORS.includes(o.c)||!Array.isArray(o.r)||o.r.length%3||o.r.length>30000)return;
-    const r=o.r;for(let i=0;i<r.length;i+=3){if(!(Number.isInteger(r[i])&&r[i]>=0&&r[i]<300&&Number.isInteger(r[i+1])&&Number.isInteger(r[i+2])&&r[i+1]>=0&&r[i+2]<=400&&r[i+1]<r[i+2]))return}
+    const r=o.r;for(let i=0;i<r.length;i+=3){if(!(Number.isInteger(r[i])&&r[i]>=0&&r[i]<CH&&Number.isInteger(r[i+1])&&Number.isInteger(r[i+2])&&r[i+1]>=0&&r[i+2]<=CW&&r[i+1]<r[i+2]))return}
     const f={c:o.c,r:r.slice(),rows:mkRows(r)};f.el=fillEl(f);FILLS.push(f);
   });
   if(!Array.isArray(a))return;
@@ -662,7 +681,7 @@ function dilate(src,W,H,k){
   return o;
 }
 function computeFill(px,py){
-  const W=400,H=300,cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const W=CW,H=CH,cv=document.createElement("canvas");cv.width=W;cv.height=H;
   const ctx=cv.getContext("2d",{willReadFrequently:true});
   ctx.strokeStyle="#000";ctx.lineCap="round";ctx.lineJoin="round";
   INK.forEach(q=>{ctx.lineWidth=q.w||INKW;ctx.stroke(new Path2D(inkD(q.p)))});
@@ -709,9 +728,9 @@ $("bigbrush").onclick=()=>{const on=!(st.pen&&!st.erase&&st.brush);if(st.erase)s
   const stg=$("stage"),down=new Set();
   let mode=null,cur=null,pid=null,hit=false,sup=false,supT=0;
   const pos=e=>{const art=$("art");if(!art)return null;const r=art.getBoundingClientRect();
-    return r.width?{x:(e.clientX-r.left)/r.width*400,y:(e.clientY-r.top)/r.height*300}:null};
-  const inside=q=>q&&q.x>=1&&q.x<=399&&q.y>=1&&q.y<=299;
-  const clampPt=q=>[+Math.min(399,Math.max(1,q.x)).toFixed(1),+Math.min(299,Math.max(1,q.y)).toFixed(1)];
+    return r.width?{x:(e.clientX-r.left)/r.width*CW,y:(e.clientY-r.top)/r.height*CH}:null};
+  const inside=q=>q&&q.x>=1&&q.x<=CW-1&&q.y>=1&&q.y<=CH-1;
+  const clampPt=q=>[+Math.min(CW-1,Math.max(1,q.x)).toFixed(1),+Math.min(CH-1,Math.max(1,q.y)).toFixed(1)];
   function segDist(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((x-a[0])*dx+(y-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(x-(a[0]+t*dx),y-(a[1]+t*dy))}
   function eraseAt(q){ /* الممحاة تزيل الخط الذي تلمسه كاملاً */
     let any=false;
@@ -771,7 +790,8 @@ function show(name){st.scene=name;st.mile=0;resetZoom();
   syncPen();
   
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
-  $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${name===FREE?'ارسم ولون هنا':'رسمة '+name+' للتلوين'}">${SCENES[name]}</svg>`;
+  if(name===FREE){chooseDims();SCENES[FREE]=freeFrame()}
+  $("stage").innerHTML=`<svg id="art" viewBox="0 0 ${name===FREE?CW:400} ${name===FREE?CH:300}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${name===FREE?'ارسم ولون هنا':'رسمة '+name+' للتلوين'}">${SCENES[name]}</svg>`;
   layout();INK.length=0;FILLS.length=0;if(name===FREE)loadInk();
   const saved=(Object.prototype.hasOwnProperty.call(PROG.fills,name)&&PROG.fills[name])||{};
   document.querySelectorAll("#art .r").forEach((r,i)=>{
@@ -840,12 +860,13 @@ async function deliverImage(blob,name){
 $("save").onclick=()=>{sfx.save();
   const svg=$("art").cloneNode(true);
   svg.removeAttribute("style");svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
-  svg.setAttribute("width","1200");svg.setAttribute("height","900");
+  const OW=1200,OH=st.scene===FREE?Math.round(1200*CH/CW):900;
+  svg.setAttribute("width",OW);svg.setAttribute("height",OH);
   svg.querySelectorAll(".r").forEach(r=>{r.setAttribute("stroke","#3b2f2a");r.setAttribute("stroke-width","3");r.setAttribute("stroke-linejoin","round")});
   const img=new Image();
   img.onload=()=>{
-    const c=document.createElement("canvas");c.width=1200;c.height=900;
-    c.getContext("2d").drawImage(img,0,0,1200,900);
+    const c=document.createElement("canvas");c.width=OW;c.height=OH;
+    c.getContext("2d").drawImage(img,0,0,OW,OH);
     const name="تلويناتي "+nextSaveNo()+".png";
     c.toBlob(blob=>{
       if(!blob){showSaveSheet(c.toDataURL("image/png"));return}
@@ -887,8 +908,8 @@ function layout(){
   if(!art)return;
   const r=stg.getBoundingClientRect(),pad=4;let W=0,H=0;
   Object.keys(SCENES).forEach(n=>{if(n===FREE)return;const b=boxOf(n);W=Math.max(W,b.x1-b.x0+2*pad);H=Math.max(H,b.y1-b.y0+2*pad)});
-  const fr=st.scene===FREE,k=fr?Math.min((innerWidth-24)/402,(r.height-8)/302):Math.min((innerWidth-24)/W,(r.height-8)/H),b=fr?{x0:1,y0:1,x1:399,y1:299}:boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
-  art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(innerWidth/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
+  const fr=st.scene===FREE,vw=fr?CW:400,vh=fr?CH:300,k=fr?Math.min((innerWidth-24)/(CW+2),(r.height-8)/(CH+2)):Math.min((innerWidth-24)/W,(r.height-8)/H),b=fr?{x0:1,y0:1,x1:CW-1,y1:CH-1}:boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
+  art.style.cssText="position:absolute;width:"+vw*k+"px;height:"+vh*k+"px;left:"+(innerWidth/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
   applyZoom();
 }
 addEventListener("resize",layout);
