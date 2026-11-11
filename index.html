@@ -73,7 +73,8 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 /* لوحة الألوان: شريط أفقي بالأعلى يُمرَّر يميناً وشمالاً (عجلة الفأرة أو السحب أو اللمس) */
 #palette{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 20px);
   display:flex;flex-direction:row;gap:8px;padding:10px 14px;background:var(--panel);border:2px solid var(--line);border-radius:36px;
-  overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+#palette::-webkit-scrollbar{display:none;width:0;height:0}
 .sw{flex:none;width:40px;height:40px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
 .sw[aria-checked="true"]{outline:4px solid var(--ring);outline-offset:2px;transform:scale(1.1)}
 /* نافذة زجاجية لاختيار الرسمة */
