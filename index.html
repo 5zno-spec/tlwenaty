@@ -696,10 +696,26 @@ try{$("palette").children[st.ci].scrollIntoView({inline:"nearest",block:"nearest
     b.type="button";b.title=n;b.setAttribute("aria-label","ابدأ تلوين "+n);b.style.setProperty("--i",i);
     b.innerHTML=ICONS[n]+"<span>"+n+"</span>";
     const f=PROG.fills&&PROG.fills[n];if(f&&Object.keys(f).length)b.classList.add("done");
-    b.onclick=()=>{show(n);sfx.scene();home.classList.add("out");setTimeout(()=>{home.hidden=true},450)};
+    b.onclick=()=>{show(n);sfx.scene();closeHome();try{history.pushState({paint:1},"")}catch(_){}};
     grid.appendChild(b);
   });
-  const go=()=>{home.classList.add("go");try{home.focus({preventScroll:true})}catch(_){}};
+  /* بقية الواجهة تُعطَّل عن لوحة المفاتيح وقارئ الشاشة ما دامت شاشة البداية ظاهرة */
+  const behind=()=>["stage","palette","dock","zoomReset"].map($);
+  let hideT=0;
+  function closeHome(){
+    home.classList.add("out");clearTimeout(hideT);
+    hideT=setTimeout(()=>{home.hidden=true;behind().forEach(e=>e.inert=false)},450);
+  }
+  function openHome(){ /* الرجوع للخلف: شاشة البداية من جديد */
+    closeGl();clearTimeout(hideT);
+    [...grid.children].forEach((b,i)=>{const f=PROG.fills&&PROG.fills[Object.keys(SCENES)[i]];b.classList.toggle("done",!!(f&&Object.keys(f).length))});
+    behind().forEach(e=>e.inert=true);
+    home.hidden=false;home.classList.remove("out");
+    try{home.focus({preventScroll:true})}catch(_){}
+  }
+  addEventListener("popstate",e=>{if(e.state&&e.state.paint)closeHome();else openHome()});
+  try{if(history.state&&history.state.paint)history.replaceState(null,"")}catch(_){} /* بعد إعادة تحميل الصفحة نبدأ من شاشة البداية */
+  const go=()=>{home.classList.add("go");behind().forEach(e=>e.inert=true);try{home.focus({preventScroll:true})}catch(_){}};
   if(window.__splashDone)go();else document.addEventListener("splashdone",go,{once:true});
 })();
 // تسجيل خدمة العمل (تعمل فقط عند التشغيل من موقع http/https)
