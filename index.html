@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>تلويناتي | لعبة تلوين للأطفال</title>
-<meta name="description" content="لعبة تلوين عربية للأطفال: ست رسمات ممتعة و12 لوناً وممحاة وأصوات مبهجة، مع فقاعات تشجيع كلما تقدّمت. لوّن واحفظ رسمتك على جهازك.">
+<title>تلويناتي</title>
+<meta name="description" content="لعبة تلوين عربية للأطفال: 11 رسمة ممتعة و12 لوناً وممحاة وأصوات مبهجة، مع فقاعات تشجيع كلما تقدّمت. لوّن واحفظ رسمتك على جهازك.">
 <meta name="theme-color" content="#a9dff7">
 <!-- معاينة الروابط على مواقع التواصل (واتساب، فيسبوك، تيليجرام، إكس...) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="تلويناتي">
 <meta property="og:locale" content="ar_AR">
-<meta property="og:title" content="تلويناتي | لعبة تلوين للأطفال">
-<meta property="og:description" content="لعبة تلوين عربية للأطفال: ست رسمات ممتعة و12 لوناً وممحاة وأصوات مبهجة، مع فقاعات تشجيع كلما تقدّمت. لوّن واحفظ رسمتك على جهازك.">
+<meta property="og:title" content="تلويناتي">
+<meta property="og:description" content="لعبة تلوين عربية للأطفال: 11 رسمة ممتعة و12 لوناً وممحاة وأصوات مبهجة، مع فقاعات تشجيع كلما تقدّمت. لوّن واحفظ رسمتك على جهازك.">
 <meta property="og:image" content="og-image.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="شعار تلويناتي: فرشاة وممحاة مبتسمتان بين إيموجي مبتسمة">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="تلويناتي | لعبة تلوين للأطفال">
-<meta name="twitter:description" content="لعبة تلوين عربية للأطفال: ست رسمات ممتعة و12 لوناً وممحاة وأصوات مبهجة، مع فقاعات تشجيع كلما تقدّمت. لوّن واحفظ رسمتك على جهازك.">
+<meta name="twitter:title" content="تلويناتي">
+<meta name="twitter:description" content="لعبة تلوين عربية للأطفال: 11 رسمة ممتعة و12 لوناً وممحاة وأصوات مبهجة، مع فقاعات تشجيع كلما تقدّمت. لوّن واحفظ رسمتك على جهازك.">
 <meta name="twitter:image" content="og-image.jpg">
 <meta name="twitter:image:alt" content="شعار تلويناتي: فرشاة وممحاة مبتسمتان بين إيموجي مبتسمة">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -76,6 +76,20 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 #dock .ic{flex:none;width:var(--ic);height:var(--ic);min-height:0}
 #dock .ic svg{width:calc(var(--ic)*.7);height:calc(var(--ic)*.7)}
 #dock #sound svg{width:calc(var(--ic)*.56);height:calc(var(--ic)*.56)}
+/* زر الرجوع لشاشة البداية: يظهر على الحاسوب فقط (الفأرة)، في مربع مستقل على يسار زر الصوت */
+#backBox{display:none}
+@media (hover:hover) and (pointer:fine){#backBox{display:flex}}
+#back{background:#a99bf2}
+#back svg{transform:translateX(-.5px)}
+/* الشريط العلوي: لوحة الألوان، ويظهر القلم على يمينها في لوحة «ارسم ولون» فقط */
+#topbar{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 10px;direction:ltr;pointer-events:none}
+#topbar>*{pointer-events:auto;direction:rtl}
+#topbar #palette{position:static;margin:0;max-width:none;min-width:0;flex:0 1 auto}
+#pen{display:none;flex:none;background:#ffe08a;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+#bigbrush{display:none;flex:none;background:#ffe08a;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+body.free #pen,body.free #bigbrush{display:grid}
+#pen[aria-pressed="true"],#bigbrush[aria-pressed="true"]{outline:4px solid var(--ring);outline-offset:2px;transform:scale(1.1)}
+#pen svg,#bigbrush svg{width:36px;height:36px}
 /* لوحة الألوان: شريط أفقي بالأعلى يُمرَّر يميناً وشمالاً (عجلة الفأرة أو السحب أو اللمس) */
 #palette{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 20px);
   display:flex;flex-direction:row;gap:8px;padding:10px 14px;background:var(--panel);border:2px solid var(--line);border-radius:36px;
@@ -222,8 +236,9 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 <div id="stage"></div>
 <button class="ic" id="zoomReset" type="button" hidden aria-label="إرجاع حجم الرسمة الطبيعي" title="إرجاع الحجم"><svg viewBox="0 0 28 28" fill="none" stroke="#3b2f2a" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M18 18l7 7M8.5 12h7"/></svg></button>
 <div id="fx" aria-hidden="true"></div>
-<div id="palette" role="radiogroup" aria-label="الألوان"></div>
+<div id="topbar"><div id="palette" role="radiogroup" aria-label="الألوان"></div><button class="ic" id="pen" type="button" aria-pressed="false" aria-label="قلم الرسم الحر" title="قلم"><svg viewBox="0 0 48 48" aria-hidden="true"><g transform="rotate(45 24 24)"><rect x="19" y="5" width="10" height="7" rx="2" fill="#f78fb3" stroke="#3b2f2a" stroke-width="1.6"/><rect x="19" y="11" width="10" height="22" fill="#ffc233" stroke="#3b2f2a" stroke-width="1.6"/><polygon points="19,33 29,33 24,44" fill="#f4dcaa" stroke="#3b2f2a" stroke-width="1.6" stroke-linejoin="round"/><polygon points="21.6,39 26.4,39 24,44" style="fill:var(--pen,#e63946)" stroke="#3b2f2a" stroke-width="1" stroke-linejoin="round"/></g></svg></button><button class="ic" id="bigbrush" type="button" aria-pressed="false" aria-label="فرشاة للتلوين التام" title="فرشاة"><svg viewBox="0 0 48 48" aria-hidden="true"><g transform="rotate(45 24 24)"><rect x="20" y="3" width="8" height="21" rx="3" fill="#c98a4b" stroke="#3b2f2a" stroke-width="1.6"/><rect x="18.5" y="22" width="11" height="7" fill="#b8c0cc" stroke="#3b2f2a" stroke-width="1.6"/><path d="M18.5 29h11q1 9-5.5 15q-6.5-6-5.5-15z" style="fill:var(--pen,#e63946)" stroke="#3b2f2a" stroke-width="1.6" stroke-linejoin="round"/></g></svg></button></div>
 <div id="dock">
+<div class="bar" id="backBox"><button class="ic" id="back" type="button" aria-label="الرجوع إلى شاشة البداية" title="رجوع"><svg viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M39 24H11M22 12L10 24l12 12" stroke="#3b2f2a" stroke-width="9.5"/><path d="M39 24H11M22 12L10 24l12 12" stroke="#fff" stroke-width="5.5"/></svg></button></div>
 <div class="bar" id="soundBox"><button class="ic" id="sound" aria-pressed="false" aria-label="كتم الصوت" title="كتم الصوت"><svg viewBox="0 0 48 48"><defs><linearGradient id="gk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fafbfd"/><stop offset="1" stop-color="#aeb8c8"/></linearGradient></defs><path d="M6 19a2 2 0 0 1 2-2h7l11-9a1.5 1.5 0 0 1 2.5 1.2v33.6A1.5 1.5 0 0 1 26 44l-11-9H8a2 2 0 0 1-2-2z" fill="url(#gk)" stroke="#5f6b7d" stroke-width="1.4" stroke-linejoin="round"/><g class="waves" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M33 18a9 9 0 0 1 0 12"/><path d="M38 12a17 17 0 0 1 0 24"/></g><g class="slash" stroke-linecap="round"><path d="M32 19l11 11M43 19L32 30" stroke="#fff" stroke-width="6.5"/><path d="M32 19l11 11M43 19L32 30" stroke="#e23d3a" stroke-width="3.4"/></g></svg></button></div>
 <div class="bar" id="actions">
   <button class="ic" id="erase" aria-pressed="false" aria-label="ممحاة: تمسح الجزء الذي تضغط عليه" title="ممحاة"><svg viewBox="0 0 48 48"><defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c7"/><stop offset="1" stop-color="#ee7b9c"/></linearGradient><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fa8ef"/><stop offset="1" stop-color="#2d6fc4"/></linearGradient></defs>
@@ -301,7 +316,89 @@ const SCENES={
  "السماء":BG+`<polygon class="r" points="193,92 162.6,84.9 162.6,99.1"/><polygon class="r" points="167.2,154.2 150.7,127.7 140.7,137.7"/><polygon class="r" points="105,180 112.1,149.6 97.9,149.6"/><polygon class="r" points="42.8,154.2 69.3,137.7 59.3,127.7"/><polygon class="r" points="17,92 47.4,99.1 47.4,84.9"/><polygon class="r" points="42.8,29.8 59.3,56.3 69.3,46.3"/><polygon class="r" points="105,4 97.9,34.4 112.1,34.4"/><polygon class="r" points="167.2,29.8 140.7,46.3 150.7,56.3"/><circle class="r" cx="105" cy="92" r="46"/><path class="r" transform="translate(215 22) scale(0.8)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/><path class="r" transform="translate(70 115) scale(2.3)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/><path d="M58 232H108M72 244H112" stroke="#3b2f2a" stroke-width="2.5" stroke-linecap="round" opacity=".45" fill="none" pointer-events="none"/><polygon class="r" points="140,238 128,216 154,224 164,240"/><polygon class="r" points="182,250 214,250 196,271 170,271"/><ellipse class="r" cx="195" cy="240" rx="70" ry="19"/><circle class="r" cx="160" cy="238" r="5.5"/><circle class="r" cx="180" cy="238" r="5.5"/><circle class="r" cx="200" cy="238" r="5.5"/><rect class="r" x="264" y="224" width="8" height="32" rx="4"/><circle cx="228" cy="235" r="4.6" fill="#fff" stroke="#3b2f2a" stroke-width="1.5" pointer-events="none"/><circle cx="244" cy="235" r="4.6" fill="#fff" stroke="#3b2f2a" stroke-width="1.5" pointer-events="none"/><circle cx="229" cy="236" r="2.2" fill="#1b1b1b" pointer-events="none"/><circle cx="245" cy="236" r="2.2" fill="#1b1b1b" pointer-events="none"/><path d="M229 246q7 6 14 0" fill="none" stroke="#3b2f2a" stroke-width="2.4" stroke-linecap="round" pointer-events="none"/><circle cx="222" cy="244" r="3" fill="#ff8fa3" opacity=".75" pointer-events="none"/><circle cx="251" cy="244" r="3" fill="#ff8fa3" opacity=".75" pointer-events="none"/>`,
  "البحر":BG+`<circle class="r" cx="255" cy="62" r="26"/><path class="r" transform="translate(15 25) scale(0.9)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/><path class="r" transform="translate(20 105) scale(0.7)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/><path class="r" transform="translate(240 110) scale(0.6)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/><rect class="r" x="-2000" y="170" width="4400" height="2000"/><rect class="r" x="164" y="52" width="10" height="150"/><polygon class="r" points="174,72 174,187 255,187"/><polygon class="r" points="164,98 164,187 93,187"/><polygon class="r" points="174,52 174,70 204,61"/><path class="r" d="M92 191H268L240 236H120Z"/><path class="r" d="M-1100 225q27.5 -22 55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0V2300H-1100Z"/><path class="r" d="M-1127.5 252q27.5 22 55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0t55 0V2300H-1127.5Z"/>`,
  "الكواكب":BG+`<path class="r" transform="rotate(-20 170 150)" d="M74 150A96 24 0 0 1 266 150L236 150A66 13 0 0 0 104 150Z"/><circle class="r" cx="170" cy="150" r="52"/><path class="r" transform="rotate(-20 170 150)" d="M74 150A96 24 0 0 0 266 150L236 150A66 13 0 0 1 104 150Z"/>
-  <circle class="r" cx="62" cy="72" r="26"/><circle class="r" cx="52" cy="66" r="6"/><circle class="r" cx="70" cy="82" r="4.5"/><circle class="r" cx="272" cy="78" r="22"/><circle class="r" cx="85" cy="237" r="28"/><path class="r" d="M70 228q8-8 16 0t14 4q-6 10-16 8q-10 4-14-12z"/><polygon class="r" points="112,21 115.4,29.3 124.4,30 117.6,35.8 119.6,44.5 112,39.9 104.4,44.5 106.4,35.8 99.6,30 108.6,29.3"/><polygon class="r" points="228,27 230.9,34 238.5,34.6 232.7,39.5 234.5,46.9 228,43 221.5,46.9 223.3,39.5 217.5,34.6 225.1,34"/><polygon class="r" points="298,148 301.2,155.6 309.4,156.3 303.1,161.7 305.1,169.7 298,165.4 290.9,169.7 292.9,161.7 286.6,156.3 294.8,155.6"/><polygon class="r" points="190,228 193.2,235.6 201.4,236.3 195.1,241.7 197.1,249.7 190,245.4 182.9,249.7 184.9,241.7 178.6,236.3 186.8,235.6"/><polygon class="r" points="30,140 32.6,146.4 39.5,146.9 34.3,151.4 35.9,158.1 30,154.5 24.1,158.1 25.7,151.4 20.5,146.9 27.4,146.4"/><polygon class="r" points="205,62 207.1,67.1 212.6,67.5 208.4,71.1 209.7,76.5 205,73.6 200.3,76.5 201.6,71.1 197.4,67.5 202.9,67.1"/><polygon class="r" points="262,220 264.6,226.4 271.5,226.9 266.3,231.4 267.9,238.1 262,234.5 256.1,238.1 257.7,231.4 252.5,226.9 259.4,226.4"/>`
+  <circle class="r" cx="62" cy="72" r="26"/><circle class="r" cx="52" cy="66" r="6"/><circle class="r" cx="70" cy="82" r="4.5"/><circle class="r" cx="272" cy="78" r="22"/><circle class="r" cx="85" cy="237" r="28"/><path class="r" d="M70 228q8-8 16 0t14 4q-6 10-16 8q-10 4-14-12z"/><polygon class="r" points="112,21 115.4,29.3 124.4,30 117.6,35.8 119.6,44.5 112,39.9 104.4,44.5 106.4,35.8 99.6,30 108.6,29.3"/><polygon class="r" points="228,27 230.9,34 238.5,34.6 232.7,39.5 234.5,46.9 228,43 221.5,46.9 223.3,39.5 217.5,34.6 225.1,34"/><polygon class="r" points="298,148 301.2,155.6 309.4,156.3 303.1,161.7 305.1,169.7 298,165.4 290.9,169.7 292.9,161.7 286.6,156.3 294.8,155.6"/><polygon class="r" points="190,228 193.2,235.6 201.4,236.3 195.1,241.7 197.1,249.7 190,245.4 182.9,249.7 184.9,241.7 178.6,236.3 186.8,235.6"/><polygon class="r" points="30,140 32.6,146.4 39.5,146.9 34.3,151.4 35.9,158.1 30,154.5 24.1,158.1 25.7,151.4 20.5,146.9 27.4,146.4"/><polygon class="r" points="205,62 207.1,67.1 212.6,67.5 208.4,71.1 209.7,76.5 205,73.6 200.3,76.5 201.6,71.1 197.4,67.5 202.9,67.1"/><polygon class="r" points="262,220 264.6,226.4 271.5,226.9 266.3,231.4 267.9,238.1 262,234.5 256.1,238.1 257.7,231.4 252.5,226.9 259.4,226.4"/>`,
+ "الجبل":BG+`
+  <circle class="r" cx="320" cy="60" r="26"/>
+  <path class="r" transform="translate(20 25) scale(.8)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/>
+  <rect class="r" x="-2000" y="240" width="4400" height="2000"/>
+  <polygon class="r" points="20,240 110,125 200,240"/>
+  <polygon class="r" points="110,125 133.5,155 122,150 110,160 98,150 86.5,155"/>
+  <polygon class="r" points="120,240 250,70 380,240"/>
+  <polygon class="r" points="250,70 280.6,110 265,103 250,115 235,103 219.4,110"/>`,
+ "الشجرة":BG+`
+  <circle class="r" cx="70" cy="65" r="28"/>
+  <path class="r" transform="translate(292 6) scale(.8)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/>
+  <rect class="r" x="-2000" y="238" width="4400" height="2000"/>
+  <path class="r" d="M268 238A40 32 0 0 1 348 238Z"/>
+  <path class="r" d="M174 242Q186 228 187 196L188 140L212 140L213 196Q214 228 226 242Z"/>
+  <path class="r" d="M130 160A38 38 0 0 1 112 100A42 42 0 0 1 160 52A46 46 0 0 1 240 52A42 42 0 0 1 288 100A38 38 0 0 1 270 160Q200 184 130 160Z"/>
+  <circle class="r" cx="158" cy="98" r="20"/>
+  <circle class="r" cx="244" cy="104" r="20"/>
+  <circle class="r" cx="200" cy="64" r="16"/>
+  <circle class="r" cx="196" cy="128" r="11"/>
+  <circle class="r" cx="146" cy="134" r="10"/>
+  <circle class="r" cx="256" cy="136" r="10"/>
+  <circle class="r" cx="212" cy="106" r="9"/>`,
+ "اللعبة":BG+`
+  <circle class="r" cx="325" cy="62" r="26"/>
+  <path class="r" transform="translate(30 25) scale(.8)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/>
+  <rect class="r" x="-2000" y="238" width="4400" height="2000"/>
+  <rect class="r" x="70" y="183" width="64" height="55"/>
+  <rect class="r" x="134" y="183" width="64" height="55"/>
+  <rect class="r" x="102" y="128" width="64" height="55"/>
+  <polygon class="r" points="102,128 134,88 166,128"/>
+  <circle class="r" cx="102" cy="210" r="14"/>
+  <circle class="r" cx="166" cy="210" r="14"/>
+  <circle class="r" cx="134" cy="156" r="14"/>
+  <circle class="r" cx="290" cy="205" r="32"/>
+  <path class="r" d="M260 194Q290 168 320 194L316 206Q290 184 264 206Z"/>
+  <polygon class="r" points="290,212 294,222 305,223 297,230 299,241 290,235 281,241 283,230 275,223 286,222"/>`,
+ "القطة":BG+`
+  <circle class="r" cx="70" cy="60" r="26"/>
+  <path class="r" transform="translate(220 12) scale(.9)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/>
+  <rect class="r" x="-2000" y="250" width="4400" height="2000"/>
+  <circle class="r" cx="90" cy="228" r="22"/>
+  <path d="M72 218Q92 212 106 224M70 232Q92 226 110 236M80 210Q96 226 90 248" fill="none" stroke="#3b2f2a" stroke-width="2" stroke-linecap="round" pointer-events="none"/>
+  <path class="r" d="M248 222Q312 224 304 154Q300 136 286 146Q296 196 244 194Z"/>
+  <ellipse class="r" cx="200" cy="195" rx="60" ry="55"/>
+  <ellipse class="r" cx="200" cy="208" rx="32" ry="36"/>
+  <ellipse class="r" cx="168" cy="247" rx="19" ry="10"/>
+  <ellipse class="r" cx="232" cy="247" rx="19" ry="10"/>
+  <polygon class="r" points="158,95 153,42 195,70"/>
+  <polygon class="r" points="242,95 247,42 205,70"/>
+  <circle class="r" cx="200" cy="120" r="50"/>
+  <polygon class="r" points="165,80 163,56 183,72"/>
+  <polygon class="r" points="235,80 237,56 217,72"/>
+  <ellipse class="r" cx="200" cy="140" rx="20" ry="14"/>
+  <circle cx="181" cy="112" r="7" fill="#1b1b1b" pointer-events="none"/><circle cx="219" cy="112" r="7" fill="#1b1b1b" pointer-events="none"/>
+  <circle cx="179" cy="109.5" r="2.4" fill="#fff" pointer-events="none"/><circle cx="217" cy="109.5" r="2.4" fill="#fff" pointer-events="none"/>
+  <polygon points="194,131 206,131 200,138" fill="#ff8fa3" stroke="#3b2f2a" stroke-width="1.4" stroke-linejoin="round" pointer-events="none"/>
+  <path d="M200 138q-6 8-13 3M200 138q6 8 13 3M165 128l-24-5M165 136l-24 4M235 128l24-5M235 136l24 4" fill="none" stroke="#3b2f2a" stroke-width="2" stroke-linecap="round" pointer-events="none"/>`,
+ "البقرة":BG+`
+  <circle class="r" cx="330" cy="58" r="26"/>
+  <path class="r" transform="translate(150 12) scale(.9)" d="M10 40a14 14 0 0 1 2-28a20 20 0 0 1 38-6a16 16 0 0 1 26 10a14 14 0 0 1 0 24z"/>
+  <rect class="r" x="-2000" y="250" width="4400" height="2000"/>
+  <rect class="r" x="138" y="205" width="20" height="45"/>
+  <rect class="r" x="164" y="205" width="20" height="45"/>
+  <rect class="r" x="232" y="205" width="20" height="45"/>
+  <rect class="r" x="258" y="205" width="20" height="45"/>
+  <ellipse class="r" cx="208" cy="224" rx="19" ry="12"/>
+  <path d="M290 152q24 6 20 48" fill="none" stroke="#3b2f2a" stroke-width="3" stroke-linecap="round" pointer-events="none"/>
+  <ellipse class="r" cx="310" cy="208" rx="8" ry="13"/>
+  <rect class="r" x="120" y="130" width="172" height="92" rx="32"/>
+  <ellipse class="r" cx="170" cy="162" rx="24" ry="18"/>
+  <ellipse class="r" cx="252" cy="186" rx="22" ry="17"/>
+  <ellipse class="r" cx="236" cy="146" rx="16" ry="12"/>
+  <ellipse class="r" transform="rotate(-18 60 132)" cx="60" cy="132" rx="18" ry="9"/>
+  <ellipse class="r" transform="rotate(18 134 128)" cx="134" cy="128" rx="18" ry="9"/>
+  <polygon class="r" points="82,126 76,98 95,121"/>
+  <polygon class="r" points="108,122 116,96 121,126"/>
+  <ellipse class="r" cx="97" cy="150" rx="38" ry="34"/>
+  <ellipse class="r" cx="86" cy="171" rx="28" ry="18"/>
+  <circle cx="90" cy="143" r="5" fill="#1b1b1b" pointer-events="none"/><circle cx="88.5" cy="141.5" r="1.7" fill="#fff" pointer-events="none"/>
+  <circle cx="108" cy="143" r="5" fill="#1b1b1b" pointer-events="none"/><circle cx="106.5" cy="141.5" r="1.7" fill="#fff" pointer-events="none"/>
+  <circle cx="77" cy="171" r="2.6" fill="#3b2f2a" pointer-events="none"/><circle cx="95" cy="171" r="2.6" fill="#3b2f2a" pointer-events="none"/>`,
+ "ارسم ولون":`<rect class="r" x="2" y="2" width="396" height="296" rx="10"/>`
 };
 const ICONS={
  "البيت":`<svg viewBox="0 0 48 48"><defs><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e5604a"/><stop offset="1" stop-color="#b83a28"/></linearGradient></defs>
@@ -326,8 +423,16 @@ const ICONS={
 <path d="M8 30h32l-5 8H13z" fill="#8a5a33"/><path d="M2 36q5-4 11 0t11 0 11 0 11 0v10H2z" fill="url(#gw)"/><path d="M2 41q5-3 11 0t11 0 11 0 11 0" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/></svg>`,
  "الكواكب":`<svg viewBox="0 0 48 48"><defs><radialGradient id="gq" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#c9a4ff"/><stop offset="1" stop-color="#6a3cc4"/></radialGradient></defs>
 <ellipse cx="22" cy="27" rx="19" ry="5.5" transform="rotate(-20 22 27)" fill="none" stroke="#f4d58a" stroke-width="3.4"/><circle cx="22" cy="27" r="11" fill="url(#gq)"/>
-<path d="M3 27a19 5.5 0 0 0 38 0" transform="rotate(-20 22 27)" fill="none" stroke="#f4d58a" stroke-width="3.4"/><polygon points="38,3 39.9,7.5 44.7,7.8 41,11 42.1,15.7 38,13.2 33.9,15.7 35,11 31.3,7.8 36.1,7.5" fill="#ffd93d" stroke="#e0a812" stroke-width=".8" stroke-linejoin="round"/><polygon points="8,7.5 9.2,10.4 12.3,10.6 9.9,12.6 10.6,15.6 8,14 5.4,15.6 6.1,12.6 3.7,10.6 6.8,10.4" fill="#ffd93d" stroke="#e0a812" stroke-width=".8" stroke-linejoin="round"/><circle cx="41" cy="30" r="1.6" fill="#fff"/></svg>`
+<path d="M3 27a19 5.5 0 0 0 38 0" transform="rotate(-20 22 27)" fill="none" stroke="#f4d58a" stroke-width="3.4"/><polygon points="38,3 39.9,7.5 44.7,7.8 41,11 42.1,15.7 38,13.2 33.9,15.7 35,11 31.3,7.8 36.1,7.5" fill="#ffd93d" stroke="#e0a812" stroke-width=".8" stroke-linejoin="round"/><polygon points="8,7.5 9.2,10.4 12.3,10.6 9.9,12.6 10.6,15.6 8,14 5.4,15.6 6.1,12.6 3.7,10.6 6.8,10.4" fill="#ffd93d" stroke="#e0a812" stroke-width=".8" stroke-linejoin="round"/><circle cx="41" cy="30" r="1.6" fill="#fff"/></svg>`,
+ "الجبل":`<svg viewBox="0 0 48 48"><circle cx="38" cy="10" r="5" fill="#ffd93d"/><polygon points="2,42 16,19 30,42" fill="#8fa9c4"/><polygon points="12,42 28,9 46,42" fill="#5f7fa6"/><polygon points="28,9 34.5,20 31,18 28,21 25,18 21.5,20" fill="#fff"/><rect x="2" y="40" width="44" height="5" rx="2" fill="#5aa845"/></svg>`,
+ "الشجرة":`<svg viewBox="0 0 48 48"><rect x="21" y="27" width="6" height="16" fill="#8d5a3b"/><circle cx="15" cy="26" r="8" fill="#4caf50"/><circle cx="33" cy="26" r="8" fill="#4caf50"/><circle cx="24" cy="16" r="11" fill="#5fbf55"/><circle cx="24" cy="27" r="8" fill="#4caf50"/><circle cx="20" cy="15" r="2.2" fill="#e63946"/><circle cx="29" cy="21" r="2.2" fill="#e63946"/><circle cx="14" cy="28" r="2.2" fill="#e63946"/><rect x="5" y="42" width="38" height="3" rx="1.5" fill="#5aa845"/></svg>`,
+ "اللعبة":`<svg viewBox="0 0 48 48"><rect x="5" y="29" width="14" height="14" fill="#ff6b6b" stroke="#c94a4a" stroke-width="1"/><rect x="19" y="29" width="14" height="14" fill="#4cc9f0" stroke="#2a9bc4" stroke-width="1"/><rect x="12" y="15" width="14" height="14" fill="#ffd93d" stroke="#d9a912" stroke-width="1"/><polygon points="12,15 19,7 26,15" fill="#7b4fc9"/><circle cx="38" cy="35" r="7.5" fill="#f78fb3" stroke="#d96a92" stroke-width="1"/><path d="M31 33Q38 26 45 33Q38 30 31 33Z" fill="#fff"/></svg>`,
+ "القطة":`<svg viewBox="0 0 48 48"><polygon points="9,22 8,6 21,14" fill="#f4a259"/><polygon points="39,22 40,6 27,14" fill="#f4a259"/><polygon points="11,18 11,11 17,15" fill="#ffb3c1"/><polygon points="37,18 37,11 31,15" fill="#ffb3c1"/><circle cx="24" cy="26" r="16" fill="#f4a259"/><ellipse cx="24" cy="32" rx="8" ry="5.5" fill="#fff3e0"/><circle cx="17" cy="24" r="2.6" fill="#1b1b1b"/><circle cx="31" cy="24" r="2.6" fill="#1b1b1b"/><circle cx="16.2" cy="23" r=".8" fill="#fff"/><circle cx="30.2" cy="23" r=".8" fill="#fff"/><polygon points="22,29 26,29 24,31.5" fill="#ff8fa3"/><path d="M24 31.5q-2.5 3-5 1M24 31.5q2.5 3 5 1M13 30l-7-1.5M13 33l-7 2M35 30l7-1.5M35 33l7 2" fill="none" stroke="#3b2f2a" stroke-width="1" stroke-linecap="round"/></svg>`,
+ "البقرة":`<svg viewBox="0 0 48 48"><ellipse cx="8" cy="15" rx="6" ry="3.2" transform="rotate(-20 8 15)" fill="#fff" stroke="#3b2f2a" stroke-width="1"/><ellipse cx="40" cy="15" rx="6" ry="3.2" transform="rotate(20 40 15)" fill="#fff" stroke="#3b2f2a" stroke-width="1"/><polygon points="14,12 11,3 19,9" fill="#f4dcaa" stroke="#3b2f2a" stroke-width="1" stroke-linejoin="round"/><polygon points="34,12 37,3 29,9" fill="#f4dcaa" stroke="#3b2f2a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="24" cy="23" rx="13" ry="15" fill="#fff" stroke="#3b2f2a" stroke-width="1.2"/><ellipse cx="31" cy="15" rx="5" ry="4.5" fill="#3b2f2a"/><ellipse cx="24" cy="34" rx="9.5" ry="6.5" fill="#ffb3c1" stroke="#3b2f2a" stroke-width="1"/><circle cx="18" cy="21" r="2" fill="#1b1b1b"/><circle cx="30" cy="21" r="2" fill="#1b1b1b"/><circle cx="21" cy="34" r="1.3" fill="#3b2f2a"/><circle cx="27" cy="34" r="1.3" fill="#3b2f2a"/></svg>`,
+ "ارسم ولون":`<svg viewBox="0 0 48 48"><rect x="4" y="8" width="37" height="30" rx="4" fill="#fff" stroke="#3b2f2a" stroke-width="2"/><path d="M10 30q4-13 9-4t8-8 6 6" fill="none" stroke="#e63946" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15q6-3 10 1" fill="none" stroke="#2a9d8f" stroke-width="2.4" stroke-linecap="round"/><g transform="rotate(40 37 30)"><rect x="34" y="14" width="6" height="5" rx="1.5" fill="#f78fb3" stroke="#3b2f2a" stroke-width="1.2"/><rect x="34" y="18" width="6" height="17" fill="#ffc233" stroke="#3b2f2a" stroke-width="1.2"/><polygon points="34,35 40,35 37,43" fill="#f4dcaa" stroke="#3b2f2a" stroke-width="1.2" stroke-linejoin="round"/><polygon points="35.6,39.5 38.4,39.5 37,43" fill="#3b2f2a"/></g></svg>`
 };
+/* معرّفات التدرجات تُجعل فريدة لكل نسخة من الأيقونة، لأن تكرارها بين شاشة البداية وقائمة الرسمات يُفقد التعبئة عند إخفاء إحداهما */
+const icon=(n,p)=>ICONS[n].replace(/\bid="([^"]+)"/g,'id="'+p+'$1"').replace(/url\(#([^)]+)\)/g,'url(#'+p+'$1)');
 const st={color:COLORS[0],erase:false,ci:0,mile:0};
 const $=id=>document.getElementById(id);
 
@@ -459,19 +564,26 @@ COLORS.forEach((c,i)=>{
 Object.keys(SCENES).forEach(n=>{
   const b=document.createElement("button");
   b.dataset.name=n;b.title=n;b.setAttribute("aria-label",n);
-  b.innerHTML=ICONS[n]+"<span>"+n+"</span>";
+  b.innerHTML=icon(n,"p_")+"<span>"+n+"</span>";
   b.onclick=()=>{show(n);sfx.scene();closeGl()};$("scenes").appendChild(b);
 });
 /* حفظ التقدم تلقائياً على هذا الجهاز: ألوان كل رسمة على حدة، الرسمة الحالية، واللون المختار */
 const PKEY="tlwenaty_progress_v1";
-const PROG={scene:null,ci:0,fills:{}};
+const PROG={scene:null,ci:0,fills:{},ink:{}};
 try{const o=JSON.parse(localStorage.getItem(PKEY)||"null");
   if(o&&typeof o==="object"){if(typeof o.scene==="string")PROG.scene=o.scene;if(Number.isInteger(o.ci))PROG.ci=o.ci;
-    if(o.fills&&typeof o.fills==="object")PROG.fills=o.fills}}catch(e){}
+    if(o.fills&&typeof o.fills==="object")PROG.fills=o.fills;if(o.ink&&typeof o.ink==="object")PROG.ink=o.ink
+    {const OLD="لوحة فارغة",NEW="ارسم ولون";
+      if(PROG.scene===OLD)PROG.scene=NEW;
+      if(PROG.fills&&PROG.fills[OLD]){PROG.fills[NEW]=PROG.fills[OLD];delete PROG.fills[OLD]}
+      if(PROG.ink&&PROG.ink[OLD]){PROG.ink[NEW]=PROG.ink[OLD];delete PROG.ink[OLD]}}
+  }}catch(e){}
 function saveProg(){
   try{const m={};
     document.querySelectorAll("#art .r").forEach((r,i)=>{const f=r.getAttribute("fill");if(f&&f!=="#ffffff")m[i]=f});
     PROG.fills[st.scene]=m;PROG.scene=st.scene;PROG.ci=st.ci;
+    if(st.scene===FREE)PROG.ink[FREE]=INK.map(q=>({c:q.c,p:q.p,w:q.w||INKW}));
+    if(st.scene===FREE)PROG.ink[FREE+"#f"]=FILLS.map(f=>({c:f.c,r:f.r}));
     localStorage.setItem(PKEY,JSON.stringify(PROG))}catch(e){}
 }
 /* النافذة الزجاجية لاختيار الرسمة */
@@ -494,35 +606,199 @@ addEventListener("keydown",e=>{if(gl.hidden)return;
   pal.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;return}
     const b=e.target.closest(".sw");if(b)b.scrollIntoView({inline:"nearest",block:"nearest"})},true);
 })();
+/* ===== لوحة «ارسم ولون»: قلم للرسم الحر، يظهر على يمين لوحة الألوان في هذه اللوحة فقط ===== */
+const FREE="ارسم ولون",INKW=5,BRUSHW=26,INK=[],FILLS=[],FILLMAX=40;
+function inkTool(){return st.scene===FREE&&(st.pen||st.erase)}
+function isDone(n){const f=PROG.fills&&PROG.fills[n];return !!((f&&Object.keys(f).length)||(n===FREE&&PROG.ink&&Array.isArray(PROG.ink[n])&&PROG.ink[n].length))}
+function syncPen(){const on=!!(st.pen&&!st.erase);$("pen").setAttribute("aria-pressed",on&&!st.brush);$("bigbrush").setAttribute("aria-pressed",on&&!!st.brush)}
+function inkD(p){
+  let d="M"+p[0][0]+" "+p[0][1];
+  if(p.length<2)return d+"l.01 0";
+  for(let i=1;i<p.length-1;i++){const a=p[i],b=p[i+1];d+="Q"+a[0]+" "+a[1]+" "+((a[0]+b[0])/2).toFixed(1)+" "+((a[1]+b[1])/2).toFixed(1)}
+  const l=p[p.length-1];return d+"L"+l[0]+" "+l[1];
+}
+function inkEl(q){
+  const e=document.createElementNS("http://www.w3.org/2000/svg","path");
+  e.setAttribute("class","ink");e.setAttribute("fill","none");e.setAttribute("stroke",q.c);e.setAttribute("stroke-width",q.w||INKW);
+  e.setAttribute("stroke-linecap","round");e.setAttribute("stroke-linejoin","round");e.setAttribute("pointer-events","none");
+  e.setAttribute("d",inkD(q.p));return e;
+}
+function loadInk(){
+  const a=PROG.ink&&PROG.ink[FREE],art=$("art");if(!art)return;
+  const fa=PROG.ink&&PROG.ink[FREE+"#f"];
+  if(Array.isArray(fa))fa.slice(0,FILLMAX).forEach(o=>{
+    if(!o||!COLORS.includes(o.c)||!Array.isArray(o.r)||o.r.length%3||o.r.length>30000)return;
+    const r=o.r;for(let i=0;i<r.length;i+=3){if(!(Number.isInteger(r[i])&&r[i]>=0&&r[i]<300&&Number.isInteger(r[i+1])&&Number.isInteger(r[i+2])&&r[i+1]>=0&&r[i+2]<=400&&r[i+1]<r[i+2]))return}
+    const f={c:o.c,r:r.slice(),rows:mkRows(r)};f.el=fillEl(f);FILLS.push(f);
+  });
+  if(!Array.isArray(a))return;
+  a.slice(0,500).forEach(o=>{
+    if(!o||!COLORS.includes(o.c)||!Array.isArray(o.p))return;
+    const p=o.p.slice(0,3000).filter(v=>Array.isArray(v)&&isFinite(v[0])&&isFinite(v[1])).map(v=>[+v[0],+v[1]]);
+    if(!p.length)return;
+    const q={c:o.c,p,w:o.w===BRUSHW?BRUSHW:INKW};q.el=inkEl(q);art.appendChild(q.el);INK.push(q);
+  });
+}
+/* ===== تعبئة الشكل المغلق بالفرشاة بضغطة واحدة ===== */
+function fillLayer(){
+  const art=$("art");let g=art.querySelector("#fillLayer");
+  if(!g){g=document.createElementNS("http://www.w3.org/2000/svg","g");g.id="fillLayer";art.insertBefore(g,art.querySelector(".ink"))}
+  return g;
+}
+function mkRows(r){const rows=[];for(let i=0;i<r.length;i+=3)(rows[r[i]]||(rows[r[i]]=[])).push(r[i+1],r[i+2]);return rows}
+function fillEl(f){
+  let d="";for(let i=0;i<f.r.length;i+=3){const y=f.r[i],x0=f.r[i+1],x1=f.r[i+2];d+="M"+x0+" "+y+"h"+(x1-x0)+"v1h"+(x0-x1)+"z"}
+  const e=document.createElementNS("http://www.w3.org/2000/svg","path");
+  e.setAttribute("fill",f.c);e.setAttribute("shape-rendering","crispEdges");e.setAttribute("pointer-events","none");e.setAttribute("d",d);
+  fillLayer().appendChild(e);return e;
+}
+function fillHit(f,x,y){const row=f.rows[Math.floor(y)];if(!row)return false;for(let j=0;j<row.length;j+=2)if(x>=row[j]&&x<row[j+1])return true;return false}
+function dilate(src,W,H,k){
+  const t=new Uint8Array(W*H),o=new Uint8Array(W*H);
+  for(let y=0;y<H;y++){const b=y*W;let l=-1e9;for(let x=0;x<W;x++){if(src[b+x])l=x;if(x-l<=k)t[b+x]=1}
+    let r=1e9;for(let x=W-1;x>=0;x--){if(src[b+x])r=x;if(r-x<=k)t[b+x]=1}}
+  for(let x=0;x<W;x++){let l=-1e9;for(let y=0;y<H;y++){if(t[y*W+x])l=y;if(y-l<=k)o[y*W+x]=1}
+    let r=1e9;for(let y=H-1;y>=0;y--){if(t[y*W+x])r=y;if(r-y<=k)o[y*W+x]=1}}
+  return o;
+}
+function computeFill(px,py){
+  const W=400,H=300,cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  ctx.strokeStyle="#000";ctx.lineCap="round";ctx.lineJoin="round";
+  INK.forEach(q=>{ctx.lineWidth=q.w||INKW;ctx.stroke(new Path2D(inkD(q.p)))});
+  const a=ctx.getImageData(0,0,W,H).data,raw=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++)raw[i]=a[i*4+3]>40?1:0;
+  const sx=Math.floor(px),sy=Math.floor(py);
+  if(sx<0||sy<0||sx>=W||sy>=H||raw[sy*W+sx])return null; /* لمسة على الخط نفسه: تبقى نقطة فرشاة */
+  const B=dilate(raw,W,H,2); /* يسدّ الفجوات الصغيرة في الشكل */
+  let seed=sy*W+sx;
+  if(B[seed]){
+    seed=-1;
+    for(let r=1;r<=6&&seed<0;r++)for(let dy=-r;dy<=r&&seed<0;dy++)for(let dx=-r;dx<=r;dx++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
+      const x=sx+dx,y=sy+dy;if(x<0||y<0||x>=W||y>=H)continue;
+      if(!B[y*W+x]){seed=y*W+x;break}
+    }
+    if(seed<0)return null;
+  }
+  const R=new Uint8Array(W*H),stack=new Int32Array(W*H);let sp=0;stack[sp++]=seed;R[seed]=1;
+  while(sp){
+    const i=stack[--sp],x=i%W,y=(i/W)|0;
+    if(x===0||y===0||x===W-1||y===H-1)return null; /* الشكل مفتوح: لا تعبئة */
+    if(!R[i-1]&&!B[i-1]){R[i-1]=1;stack[sp++]=i-1}
+    if(!R[i+1]&&!B[i+1]){R[i+1]=1;stack[sp++]=i+1}
+    if(!R[i-W]&&!B[i-W]){R[i-W]=1;stack[sp++]=i-W}
+    if(!R[i+W]&&!B[i+W]){R[i+W]=1;stack[sp++]=i+W}
+  }
+  const R2=dilate(R,W,H,4),r=[]; /* تمتد قليلاً تحت الخطوط فلا تبقى حواف بيضاء */
+  for(let y=0;y<H;y++){let x=0;while(x<W){if(R2[y*W+x]){const x0=x;while(x<W&&R2[y*W+x])x++;r.push(y,x0,x)}else x++}}
+  return r.length&&r.length<=30000?r:null;
+}
+function tryFill(pt,c){
+  if(st.scene!==FREE)return false;
+  let r;try{r=computeFill(pt[0],pt[1])}catch(e){return false}
+  if(!r)return false;
+  const f={c,r,rows:mkRows(r)};f.el=fillEl(f);FILLS.push(f);
+  if(FILLS.length>FILLMAX)FILLS.shift().el.remove();
+  return true;
+}
+function clearInk(){INK.forEach(q=>q.el&&q.el.remove());INK.length=0;FILLS.forEach(f=>f.el&&f.el.remove());FILLS.length=0}
+$("pen").onclick=()=>{const on=!(st.pen&&!st.erase&&!st.brush);if(st.erase)setErase(false);st.brush=false;st.pen=on;syncPen();sfx.tool(on);updateCursor()};
+$("bigbrush").onclick=()=>{const on=!(st.pen&&!st.erase&&st.brush);if(st.erase)setErase(false);st.brush=on;st.pen=on;syncPen();sfx.tool(on);updateCursor()};
+(function(){
+  const stg=$("stage"),down=new Set();
+  let mode=null,cur=null,pid=null,hit=false,sup=false,supT=0;
+  const pos=e=>{const art=$("art");if(!art)return null;const r=art.getBoundingClientRect();
+    return r.width?{x:(e.clientX-r.left)/r.width*400,y:(e.clientY-r.top)/r.height*300}:null};
+  const inside=q=>q&&q.x>=1&&q.x<=399&&q.y>=1&&q.y<=299;
+  const clampPt=q=>[+Math.min(399,Math.max(1,q.x)).toFixed(1),+Math.min(299,Math.max(1,q.y)).toFixed(1)];
+  function segDist(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((x-a[0])*dx+(y-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(x-(a[0]+t*dx),y-(a[1]+t*dy))}
+  function eraseAt(q){ /* الممحاة تزيل الخط الذي تلمسه كاملاً */
+    let any=false;
+    for(let i=INK.length-1;i>=0;i--){
+      const s2=INK[i],rr=9+(s2.w||INKW)/2,p=s2.p;let near=false;
+      if(p.length===1)near=Math.hypot(p[0][0]-q.x,p[0][1]-q.y)<=rr;
+      else for(let k=0;k<p.length-1&&!near;k++)near=segDist(q.x,q.y,p[k],p[k+1])<=rr;
+      if(near){s2.el.remove();INK.splice(i,1);any=true}
+    }
+    if(!any)for(let i=FILLS.length-1;i>=0;i--){if(fillHit(FILLS[i],q.x,q.y)){FILLS[i].el.remove();FILLS.splice(i,1);any=true;break}}
+    return any;
+  }
+  function cancel(){if(cur){cur.el.remove();cur=null}mode=null;pid=null}
+  stg.addEventListener("pointerdown",e=>{
+    down.add(e.pointerId);
+    if(down.size>1){cancel();return} /* إصبع ثانٍ: تكبير/تحريك وليس رسماً */
+    sup=false;
+    if(!inkTool()||(e.pointerType==="mouse"&&e.button!==0))return;
+    const q=pos(e);if(!inside(q))return;
+    pid=e.pointerId;hit=false;
+    if(st.erase){mode="erase";if(eraseAt(q)){hit=true;sfx.erase()}}
+    else{
+      mode="pen";cur={c:st.color,w:st.brush?BRUSHW:INKW,p:[clampPt(q)],tap:!!st.brush};cur.el=inkEl(cur);if(cur.tap)cur.el.style.display="none";$("art").appendChild(cur.el);
+      try{brush(0,.07)}catch(_){}
+    }
+  });
+  addEventListener("pointermove",e=>{
+    if(!mode||e.pointerId!==pid||down.size>1)return;
+    const q=pos(e);if(!q)return;
+    if(mode==="erase"){if(eraseAt(q)){if(!hit)sfx.erase();hit=true}return}
+    const pt=clampPt(q),l=cur.p[cur.p.length-1];
+    if(Math.hypot(pt[0]-l[0],pt[1]-l[1])>=.8&&cur.p.length<3000){cur.p.push(pt);cur.el.setAttribute("d",inkD(cur.p))}
+    if(cur.tap&&Math.hypot(pt[0]-cur.p[0][0],pt[1]-cur.p[0][1])>3){cur.tap=false;cur.el.style.display=""}
+  });
+  function up(e){
+    down.delete(e.pointerId);
+    if(e.pointerId!==pid||!mode)return;
+    if(mode==="pen"&&cur){
+      if(cur.tap){ /* ضغطة واحدة بالفرشاة: تعبئة الشكل المغلق، وإلا نقطة */
+        cur.tap=false;
+        if(tryFill(cur.p[0],cur.c)){cur.el.remove();cur=null;try{sfx.fill(false)}catch(_){}}
+        else cur.el.style.display="";
+      }
+      if(cur){INK.push(cur);if(INK.length>500){INK.shift().el.remove()}}
+      saveProg();
+    }
+    else if(mode==="erase"&&hit)saveProg();
+    if(mode==="pen"||hit){sup=true;clearTimeout(supT);supT=setTimeout(()=>{sup=false},350)} /* لا نحسب النقرة تلويناً للخلفية */
+    cur=null;mode=null;pid=null;
+  }
+  addEventListener("pointerup",up);addEventListener("pointercancel",up);
+  stg.addEventListener("click",e=>{if(sup){e.stopPropagation();e.preventDefault()}},true);
+})();
 function show(name){st.scene=name;st.mile=0;resetZoom();
+  st.pen=name===FREE;document.body.classList.toggle("free",st.pen);if(st.pen&&st.erase)setErase(false);
+  if(name===FREE){st.brush=false;st.color="#222222";st.ci=COLORS.indexOf("#222222");st.pen=true;setErase(false)}
+  syncPen();
   
   [...$("scenes").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.name===name));
-  $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="رسمة ${name} للتلوين">${SCENES[name]}</svg>`;
-  layout();
+  $("stage").innerHTML=`<svg id="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${name===FREE?'ارسم ولون هنا':'رسمة '+name+' للتلوين'}">${SCENES[name]}</svg>`;
+  layout();INK.length=0;FILLS.length=0;if(name===FREE)loadInk();
   const saved=(Object.prototype.hasOwnProperty.call(PROG.fills,name)&&PROG.fills[name])||{};
   document.querySelectorAll("#art .r").forEach((r,i)=>{
     const sc=saved[i];r.setAttribute("fill",COLORS.includes(sc)?sc:"#ffffff");
     r.addEventListener("click",ev=>{const was=r.getAttribute("fill")!=="#ffffff";r.setAttribute("fill",st.erase?"#ffffff":st.color);const bub=st.scene==="السمكة"&&r.tagName==="circle"&&+r.getAttribute("r")<=14;st.erase?sfx.erase():sfx.fill(bub);
       saveProg();
-      if(!st.erase&&!was&&st.color!=="#ffffff")onProgress(ev,r)});
+      if(!st.erase&&!was&&st.color!=="#ffffff"&&name!==FREE)onProgress(ev,r)});
   });
   st.mile=Math.floor(progressRatio()*4);saveProg();
 }
 function cursorSvg(){
   const body=st.erase
    ?'<g transform="rotate(-35 16 16)"><rect x="3" y="9" width="26" height="14" rx="3" fill="#3f86da" stroke="#3b2f2a" stroke-width="1.2"/><rect x="3" y="9" width="15" height="14" rx="3" fill="#f08aa8" stroke="#3b2f2a" stroke-width="1.2"/></g>'
+   :st.pen&&st.brush&&st.scene===FREE?'<path d="M29 3L16 16" stroke="#c98a4b" stroke-width="4.5" stroke-linecap="round"/><path d="M16.5 15.5L13 19" stroke="#b8c0cc" stroke-width="5.5"/><path d="M12 18.5L16.5 23Q13.5 30.5 4 29Q4 22 12 18.5z" fill="'+st.color+'" stroke="#3b2f2a" stroke-width="1.2" stroke-linejoin="round"/>'
    :'<path d="M28 4L14 18" stroke="#c98a4b" stroke-width="4.5" stroke-linecap="round"/><path d="M14.5 17.5L10.5 21.5" stroke="#b8c0cc" stroke-width="5.5"/><path d="M8.2 20.2L12.8 24.8Q10.5 30.5 3 29Q3.5 24 8.2 20.2z" fill="'+st.color+'" stroke="#3b2f2a" stroke-width="1.2" stroke-linejoin="round"/>';
   return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">'+body+'</svg>';
 }
 function updateCursor(){
+  $("pen").style.setProperty("--pen",st.color);$("bigbrush").style.setProperty("--pen",st.color);
   const hot=st.erase?"9 29":"3 29";
   $("stage").style.cursor='url("data:image/svg+xml,'+encodeURIComponent(cursorSvg())+'") '+hot+', '+(st.erase?"cell":"crosshair");
 }
-function setErase(on){st.erase=on;updateCursor();$("erase").setAttribute("aria-pressed",on);
+function setErase(on){const was=st.erase;st.erase=on;if(st.scene===FREE){if(on)st.pen=false;else if(was)st.pen=true;syncPen()}updateCursor();$("erase").setAttribute("aria-pressed",on);
   if(on)[...$("palette").children].forEach(x=>x.setAttribute("aria-checked",false));
   else [...$("palette").children].forEach(x=>x.setAttribute("aria-checked",x.style.background===""?false:x.dataset.c===st.color))}
 $("erase").onclick=()=>{setErase(!st.erase);sfx.tool(st.erase)};
-$("reset").onclick=()=>{sfx.reset();st.mile=0;document.querySelectorAll("#art .r").forEach(r=>r.setAttribute("fill","#ffffff"));saveProg()};
+$("reset").onclick=()=>{sfx.reset();st.mile=0;document.querySelectorAll("#art .r").forEach(r=>r.setAttribute("fill","#ffffff"));clearInk();saveProg()};
 let saveNoMem=0;
 function nextSaveNo(){ // رقم تسلسلي يبقى محفوظاً بين مرات فتح اللعبة
   let n;
@@ -610,8 +886,8 @@ function layout(){
   stg.style.top=(tb+gap)+"px";stg.style.bottom=Math.max(0,innerHeight-ab+gap)+"px";stg.style.left=stg.style.right="0px";
   if(!art)return;
   const r=stg.getBoundingClientRect(),pad=4;let W=0,H=0;
-  Object.keys(SCENES).forEach(n=>{const b=boxOf(n);W=Math.max(W,b.x1-b.x0+2*pad);H=Math.max(H,b.y1-b.y0+2*pad)});
-  const k=Math.min((innerWidth-24)/W,(r.height-8)/H),b=boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
+  Object.keys(SCENES).forEach(n=>{if(n===FREE)return;const b=boxOf(n);W=Math.max(W,b.x1-b.x0+2*pad);H=Math.max(H,b.y1-b.y0+2*pad)});
+  const fr=st.scene===FREE,k=fr?Math.min((innerWidth-24)/402,(r.height-8)/302):Math.min((innerWidth-24)/W,(r.height-8)/H),b=fr?{x0:1,y0:1,x1:399,y1:299}:boxOf(st.scene),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
   art.style.cssText="position:absolute;width:"+400*k+"px;height:"+300*k+"px;left:"+(innerWidth/2-cx*k)+"px;top:"+(r.height/2-cy*k)+"px";
   applyZoom();
 }
@@ -657,7 +933,7 @@ function resetZoom(){Z.z=1;Z.tx=Z.ty=0;applyZoom()}
       const a=[...pts.values()],r=rect(),mx=(a[0].x+a[1].x)/2-r.left,my=(a[0].y+a[1].y)/2-r.top,
         nz=Math.min(ZMAX,Math.max(ZMIN,g.z0*Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)/g.d0));
       Z.z=nz;Z.tx=mx-bx(art).L-nz*g.lx;Z.ty=my-bx(art).T-nz*g.ly;applyZoom();
-    }else if(g.mode==="pan"&&Z.z>1){
+    }else if(g.mode==="pan"&&Z.z>1&&!inkTool()){
       const dx=p.x-g.x0,dy=p.y-g.y0;
       if(!g.moved&&Math.hypot(dx,dy)>8)g.moved=true; /* حركة صغيرة تبقى نقرة تلوين عادية */
       if(g.moved){Z.tx=g.tx0+dx;Z.ty=g.ty0+dy;applyZoom()}
@@ -694,13 +970,13 @@ try{$("palette").children[st.ci].scrollIntoView({inline:"nearest",block:"nearest
   Object.keys(SCENES).forEach((n,i)=>{
     const b=document.createElement("button");
     b.type="button";b.title=n;b.setAttribute("aria-label","ابدأ تلوين "+n);b.style.setProperty("--i",i);
-    b.innerHTML=ICONS[n]+"<span>"+n+"</span>";
-    const f=PROG.fills&&PROG.fills[n];if(f&&Object.keys(f).length)b.classList.add("done");
+    b.innerHTML=icon(n,"h_")+"<span>"+n+"</span>";
+    if(isDone(n))b.classList.add("done");
     b.onclick=()=>{show(n);sfx.scene();closeHome();try{history.pushState({paint:1},"")}catch(_){}};
     grid.appendChild(b);
   });
   /* بقية الواجهة تُعطَّل عن لوحة المفاتيح وقارئ الشاشة ما دامت شاشة البداية ظاهرة */
-  const behind=()=>["stage","palette","dock","zoomReset"].map($);
+  const behind=()=>["stage","palette","pen","bigbrush","dock","zoomReset"].map($);
   let hideT=0;
   function closeHome(){
     home.classList.add("out");clearTimeout(hideT);
@@ -708,12 +984,13 @@ try{$("palette").children[st.ci].scrollIntoView({inline:"nearest",block:"nearest
   }
   function openHome(){ /* الرجوع للخلف: شاشة البداية من جديد */
     closeGl();clearTimeout(hideT);
-    [...grid.children].forEach((b,i)=>{const f=PROG.fills&&PROG.fills[Object.keys(SCENES)[i]];b.classList.toggle("done",!!(f&&Object.keys(f).length))});
+    [...grid.children].forEach((b,i)=>{b.classList.toggle("done",isDone(Object.keys(SCENES)[i]))});
     behind().forEach(e=>e.inert=true);
     home.hidden=false;home.classList.remove("out");
     try{home.focus({preventScroll:true})}catch(_){}
   }
   addEventListener("popstate",e=>{if(e.state&&e.state.paint)closeHome();else openHome()});
+  $("back").onclick=()=>{try{if(history.state&&history.state.paint){history.back();return}}catch(_){}openHome()};
   try{if(history.state&&history.state.paint)history.replaceState(null,"")}catch(_){} /* بعد إعادة تحميل الصفحة نبدأ من شاشة البداية */
   const go=()=>{home.classList.add("go");behind().forEach(e=>e.inert=true);try{home.focus({preventScroll:true})}catch(_){}};
   if(window.__splashDone)go();else document.addEventListener("splashdone",go,{once:true});
@@ -728,7 +1005,7 @@ if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
 <!--
 # تلويناتي 🎨
 
-لعبة تلوين للأطفال بالعربية: ست رسمات (البيت، السمكة، الزهرة، السماء، البحر، الكواكب)، 12 لوناً، ممحاة، أصوات مبهجة، وفقاعات تشجيع (إيموجي مبتسمة وإعجاب) كلما تقدّم الطفل في التلوين.
+لعبة تلوين للأطفال بالعربية: 11 رسمة (البيت، السمكة، الزهرة، السماء، البحر، الكواكب، الجبل، الشجرة، اللعبة، القطة، البقرة)، 12 لوناً، ممحاة، أصوات مبهجة، وفقاعات تشجيع (إيموجي مبتسمة وإعجاب) كلما تقدّم الطفل في التلوين.
 
 ## المميزات
 - واجهة أولية بلوجو «تلويناتي» وشريط تقدم وردي مدته 5 ثوانٍ.
