@@ -457,6 +457,37 @@ function nextSaveNo(){ // رقم تسلسلي يبقى محفوظاً بين م�
   catch(e){n=++saveNoMem}
   return n;
 }
+/* شاشة احتياطية: تعرض الصورة ليحفظها الطفل بالضغط المطوّل (تعمل على كل الهواتف واللوحات) */
+function showSaveSheet(src,revoke){
+  const old=document.getElementById("saveSheet");if(old)old.remove();
+  const o=document.createElement("div");o.id="saveSheet";
+  o.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(20,20,40,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;direction:rtl;font-family:inherit";
+  const p=document.createElement("p");
+  p.textContent="اضغط مطوّلاً على الصورة ثم اختر «حفظ الصورة» 🎨";
+  p.style.cssText="color:#fff;font-size:20px;font-weight:700;text-align:center;margin:0";
+  const im=document.createElement("img");im.src=src;im.alt="رسمتك";
+  im.style.cssText="max-width:100%;max-height:68vh;border-radius:14px;background:#fff;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto";
+  const b=document.createElement("button");b.type="button";b.textContent="إغلاق";
+  b.style.cssText="background:#6ec9f5;color:#10283a;border:0;border-radius:999px;padding:12px 34px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer";
+  b.onclick=()=>{o.remove();if(revoke)URL.revokeObjectURL(src)};
+  o.append(p,im,b);document.body.appendChild(o);
+}
+/* تسليم الصورة: مشاركة/حفظ أصلي على الهاتف، ثم تنزيل مباشر، ثم الشاشة الاحتياطية */
+async function deliverImage(blob,name){
+  const file=(()=>{try{return new File([blob],name,{type:"image/png"})}catch(e){return null}})();
+  if(file&&navigator.canShare&&navigator.share){
+    try{
+      if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"تلويناتي"});return}
+    }catch(e){if(e&&e.name==="AbortError")return}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  if("download" in a&&!/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)){
+    a.download=name;a.href=url;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    return;
+  }
+  showSaveSheet(url,true);
+}
 $("save").onclick=()=>{sfx.save();
   const svg=$("art").cloneNode(true);
   svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
@@ -468,9 +499,8 @@ $("save").onclick=()=>{sfx.save();
     c.getContext("2d").drawImage(img,0,0,1200,900);
     const name="تلويناتي "+nextSaveNo()+".png";
     c.toBlob(blob=>{
-      const url=URL.createObjectURL(blob),a=document.createElement("a");
-      a.download=name;a.href=url;document.body.appendChild(a);a.click();a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),4000);
+      if(!blob){showSaveSheet(c.toDataURL("image/png"));return}
+      deliverImage(blob,name);
     },"image/png");
   };
   img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(svg));
