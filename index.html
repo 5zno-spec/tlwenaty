@@ -110,6 +110,51 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 @media (prefers-reduced-motion:reduce){#splash .logo{animation:none}}
 
+/* ===== شاشة البداية: الشعار بتأثيرات + اختيار الرسمة ===== */
+#home{position:fixed;inset:0;z-index:200;overflow-x:hidden;overflow-y:auto;display:flex;outline:none;color:#3b2f2a;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));
+  background:linear-gradient(165deg,#a9dff7 0%,#cfeffc 48%,#ffdbe9 100%);
+  transition:opacity .4s ease,transform .4s ease,visibility 0s linear .4s}
+#home[hidden]{display:none}
+#home.out{opacity:0;transform:scale(1.05);visibility:hidden;pointer-events:none}
+#home:not(.go) *,#home:not(.go) *::before{animation-play-state:paused!important}
+.hin{margin:auto;display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2.4vh,22px);width:100%}
+.hlogo{position:relative;flex:none;height:min(36vh,300px);aspect-ratio:563/720}
+.hlogo::before{content:"";position:absolute;inset:-14%;border-radius:50%;filter:blur(30px);
+  background:conic-gradient(#ff9cc6,#ffd86b,#9be39a,#7fd3ff,#c4a2ff,#ff9cc6);
+  animation:glowIn 1s .15s ease both,spin 10s linear infinite}
+.hlogo img{position:relative;display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(60,40,90,.28));
+  animation:logoIn 1.05s cubic-bezier(.34,1.56,.64,1) both,sway 3.4s ease-in-out 1.05s infinite}
+.hshine{position:absolute;inset:0;pointer-events:none;-webkit-mask:var(--logo) center/100% 100% no-repeat;mask:var(--logo) center/100% 100% no-repeat;
+  background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.95) 50%,transparent 60%) 100% 0/300% 100% no-repeat;
+  animation:shine 3.6s ease-in-out 1.3s infinite both}
+.spk{position:absolute;line-height:1;pointer-events:none;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+  animation:twinkle 2.2s ease-in-out var(--d) infinite both}
+.htitle{margin:0;font-size:clamp(19px,4.8vw,27px);font-weight:700;text-align:center;animation:rise .6s ease .75s both}
+#homeScenes{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,2vw,14px);width:min(470px,100%)}
+#homeScenes button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  min-height:clamp(92px,15vh,118px);padding:8px 6px;border-radius:22px;font-size:16px;color:#3b2f2a;
+  background:rgba(255,255,255,.78);border:3px solid #3b2f2a;box-shadow:0 5px 0 rgba(59,47,42,.85);
+  transition:transform .12s ease,box-shadow .12s ease;animation:cardIn .55s cubic-bezier(.34,1.45,.64,1) calc(.85s + var(--i)*.09s) both}
+#homeScenes button svg{width:58px;height:58px;display:block;pointer-events:none;filter:drop-shadow(0 1.5px 1px rgba(0,0,0,.28))}
+#homeScenes button:hover{transform:translateY(-3px) scale(1.04)}
+#homeScenes button:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(59,47,42,.85)}
+#homeScenes button.done::after{content:"🖌️";position:absolute;top:4px;inset-inline-end:6px;font-size:16px;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+@keyframes logoIn{0%{opacity:0;transform:scale(.15) rotate(-12deg) translateY(50px)}55%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes sway{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-8px) rotate(1.2deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glowIn{from{opacity:0}to{opacity:.5}}
+@keyframes shine{0%{background-position:100% 0}45%,100%{background-position:0 0}}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(25deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(.85)}to{opacity:1;transform:none}}
+@media (min-aspect-ratio:3/2) and (max-height:520px){#homeScenes{grid-template-columns:repeat(6,1fr);width:min(780px,100%)}.hlogo{height:min(34vh,200px)}}
+@media (prefers-reduced-motion:reduce){
+  .hlogo::before,.hlogo img,.hshine,.spk,.htitle,#homeScenes button{animation:none!important}
+  .hlogo::before{opacity:.45}.hshine,.spk{display:none}
+}
+
 /* ===== فقاعات التفاعل ===== */
 #fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
 .bub{position:absolute;display:grid;place-items:center;width:var(--s);height:var(--s);margin:calc(var(--s)/-2) 0 0 calc(var(--s)/-2);border-radius:50%;
@@ -135,18 +180,37 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 <script>
 (function(){
   var sp=document.getElementById("splash"),fill=sp.querySelector(".fill"),done=false;
+  window.__logoSrc=sp.querySelector(".logo").src; /* تُعاد استعماله في شاشة البداية دون تكرار الصورة */
   function others(){return [].slice.call(document.body.children).filter(function(e){return e!==sp})}
   document.addEventListener("DOMContentLoaded",function(){if(!done)others().forEach(function(e){e.inert=true})});
   function finish(){
     if(done)return;done=true;
     others().forEach(function(e){e.inert=false});
     sp.classList.add("hide");
+    window.__splashDone=true;
+    document.dispatchEvent(new Event("splashdone"));
     setTimeout(function(){sp.remove()},600);
   }
   fill.addEventListener("animationend",finish);
   setTimeout(finish,5400);
 })();
 </script>
+<div id="home" tabindex="-1" role="region" aria-label="شاشة البداية">
+  <div class="hin">
+    <div class="hlogo">
+      <span class="spk" style="top:2%;left:4%;font-size:26px;--d:.2s" aria-hidden="true">✨</span>
+      <span class="spk" style="top:14%;right:-2%;font-size:20px;--d:.9s" aria-hidden="true">⭐</span>
+      <span class="spk" style="top:52%;left:-6%;font-size:18px;--d:1.5s" aria-hidden="true">✨</span>
+      <span class="spk" style="top:66%;right:-4%;font-size:26px;--d:.5s" aria-hidden="true">✨</span>
+      <span class="spk" style="top:90%;left:12%;font-size:20px;--d:1.2s" aria-hidden="true">⭐</span>
+      <span class="spk" style="top:-4%;right:26%;font-size:18px;--d:1.8s" aria-hidden="true">✨</span>
+      <img alt="تلويناتي" width="563" height="720">
+      <div class="hshine" aria-hidden="true"></div>
+    </div>
+    <p class="htitle" id="homeTitle">اختر رسمة وابدأ التلوين 🎨</p>
+    <div id="homeScenes" role="group" aria-labelledby="homeTitle"></div>
+  </div>
+</div>
 <div id="stage"></div>
 <div id="fx" aria-hidden="true"></div>
 <div id="palette" role="radiogroup" aria-label="الألوان"></div>
@@ -546,6 +610,21 @@ if(PROG.ci>=0&&PROG.ci<COLORS.length){st.ci=PROG.ci;st.color=COLORS[PROG.ci];
   [...$("palette").children].forEach((x,k)=>x.setAttribute("aria-checked",k===st.ci))}
 show(Object.prototype.hasOwnProperty.call(SCENES,PROG.scene)?PROG.scene:"البيت");layout();updateCursor();
 try{$("palette").children[st.ci].scrollIntoView({inline:"nearest",block:"nearest"})}catch(e){}
+/* شاشة البداية بعد التحميل: الشعار بتأثيرات وتحته اختيار الرسمة */
+(function(){
+  const home=$("home"),grid=$("homeScenes"),wrap=home.querySelector(".hlogo"),src=window.__logoSrc;
+  if(src){wrap.querySelector("img").src=src;wrap.style.setProperty("--logo",'url("'+src+'")')}
+  Object.keys(SCENES).forEach((n,i)=>{
+    const b=document.createElement("button");
+    b.type="button";b.title=n;b.setAttribute("aria-label","ابدأ تلوين "+n);b.style.setProperty("--i",i);
+    b.innerHTML=ICONS[n]+"<span>"+n+"</span>";
+    const f=PROG.fills&&PROG.fills[n];if(f&&Object.keys(f).length)b.classList.add("done");
+    b.onclick=()=>{show(n);sfx.scene();home.classList.add("out");setTimeout(()=>{home.hidden=true},450)};
+    grid.appendChild(b);
+  });
+  const go=()=>{home.classList.add("go");try{home.focus({preventScroll:true})}catch(_){}};
+  if(window.__splashDone)go();else document.addEventListener("splashdone",go,{once:true});
+})();
 // تسجيل خدمة العمل (تعمل فقط عند التشغيل من موقع http/https)
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));

@@ -1,5 +1,5 @@
 // خدمة العمل: تتيح تشغيل تلويناتي بدون إنترنت. غيّر رقم النسخة عند كل تحديث للملفات.
-const CACHE="talwinati-v2";
+const CACHE="talwinati-v3";
 const CORE=["./","index.html","manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable-512.png","apple-touch-icon.png"];
 const FONT_HOSTS=["fonts.googleapis.com","fonts.gstatic.com"];
 
