@@ -614,18 +614,19 @@ let CW=400,CH=300;
 function freeFrame(){return '<rect class="r" x="2" y="2" width="'+(CW-4)+'" height="'+(CH-4)+'" rx="10"/>'}
 function chooseDims(){
   const io=PROG.ink||{},d=io[FREE],f=io[FREE+"#f"],dm=io[FREE+"#d"];
-  if(Array.isArray(dm)&&dm.length===2&&dm.every(v=>Number.isInteger(v)&&v>=100&&v<=1000)){CW=dm[0];CH=dm[1];return}
   const tb=$("palette").getBoundingClientRect().bottom,ab=$("actions").getBoundingClientRect().top;
   const a=Math.min(2.5,Math.max(.4,(innerWidth-24)/Math.max(100,ab-tb-28)));
-  if((Array.isArray(d)&&d.length)||(Array.isArray(f)&&f.length)){
-    /* رسم قديم بمقاس 400×300: نوسّع اللوحة لتملأ الشاشة ونضع الرسم القديم في وسطها */
-    if(a>=4/3){CH=300;CW=Math.round(300*a)}else{CW=400;CH=Math.round(400/a)}
-    const dx=Math.round((CW-400)/2),dy=Math.round((CH-300)/2);
-    if(Array.isArray(d))d.forEach(q=>{if(q&&Array.isArray(q.p))q.p=q.p.map(v=>Array.isArray(v)?[+v[0]+dx,+v[1]+dy]:v)});
-    if(Array.isArray(f))f.forEach(q=>{if(q&&Array.isArray(q.r))for(let i=0;i+2<q.r.length;i+=3){q.r[i]+=dy;q.r[i+1]+=dx;q.r[i+2]+=dx}});
-    io[FREE+"#d"]=[CW,CH];return;
-  }
-  CW=Math.round(Math.sqrt(120000*a));CH=Math.round(Math.sqrt(120000/a));
+  const has=(Array.isArray(d)&&d.length)||(Array.isArray(f)&&f.length);
+  if(!has){CW=Math.round(Math.sqrt(120000*a));CH=Math.round(Math.sqrt(120000/a));return}
+  let ow=400,oh=300; /* رسم قديم بلا مقاس محفوظ: المقاس الأصلي */
+  if(Array.isArray(dm)&&dm.length===2&&dm.every(v=>Number.isInteger(v)&&v>=100&&v<=2000)){ow=dm[0];oh=dm[1]}
+  /* نوسّع اللوحة (ولا نصغّرها) لتطابق شكل الشاشة الحالية ونضع الرسم في وسطها */
+  let nw,nh;if(a>=ow/oh){nh=oh;nw=Math.round(oh*a)}else{nw=ow;nh=Math.round(ow/a)}
+  if(nw>1600||nh>1600||(Math.abs(nw-ow)<=2&&Math.abs(nh-oh)<=2)){CW=ow;CH=oh;return}
+  const dx=Math.round((nw-ow)/2),dy=Math.round((nh-oh)/2);
+  if(Array.isArray(d))d.forEach(q=>{if(q&&Array.isArray(q.p))q.p=q.p.map(v=>Array.isArray(v)?[+v[0]+dx,+v[1]+dy]:v)});
+  if(Array.isArray(f))f.forEach(q=>{if(q&&Array.isArray(q.r))for(let i=0;i+2<q.r.length;i+=3){q.r[i]+=dy;q.r[i+1]+=dx;q.r[i+2]+=dx}});
+  CW=nw;CH=nh;
 }
 function inkTool(){return st.scene===FREE&&(st.pen||st.erase)}
 function isDone(n){const f=PROG.fills&&PROG.fills[n];return !!((f&&Object.keys(f).length)||(n===FREE&&PROG.ink&&Array.isArray(PROG.ink[n])&&PROG.ink[n].length))}
